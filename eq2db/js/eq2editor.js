@@ -210,20 +210,26 @@ function CalculateWeaponDamageRating() {
 
 function ReloadItemIcon() {
 	let e = document.getElementById('itemIcon');
+	let eClassic = document.getElementById('itemClassicIcon');
 
+	let classic_icon = document.getElementsByName('items|classic_icon')[0].value;
 	let icon = document.getElementsByName('items|icon')[0].value;
 	let tier = document.getElementsByName('items|tier')[0].value;
 	let crafted = document.getElementsByName('items|crafted')[0].checked ? '&crafted' : "";
 
 	let link = `eq2Icon.php?type=item&id=${icon}&tier=${tier}${crafted}`;
-
-	if (link == e.getAttribute("src")) return;
-
-	e.setAttribute("src", link);
+	let linkClassic = `eq2Icon.php?type=item&id=${classic_icon}&tier=${tier}${crafted}`;
+	if(linkClassic != eClassic.getAttribute("src")) {
+		eClassic.setAttribute("src", linkClassic);
+	}
+	if (link != e.getAttribute("src")) {
+		e.setAttribute("src", link);
+	}
 }
 
 function UpdateItemTierTag() {
 	let e = document.getElementById('tierTag');
+	let eClassic = document.getElementById('tierClassicTag');
 	let crafted = document.getElementsByName('items|crafted')[0].checked;
 	let tier = document.getElementsByName('items|tier')[0].value;
 
@@ -275,7 +281,9 @@ function UpdateItemTierTag() {
 	}
 
 	e.innerHTML = text;
+	eClassic.innerHTML = text;
 	e.setAttribute("style", `color:${color}`);
+	eClassic.setAttribute("style", `color:${color}`);
 }
 
 function ElementToggleCheckbox(checkboxID, elementID) {

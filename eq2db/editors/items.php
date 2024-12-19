@@ -308,7 +308,7 @@ switch($_GET['show'] ?? "")
 					case "byName"			:
 						$itemName = $eq2->SQLEscape($_POST['itemname']);
 						if( strlen($_POST['itemname']) > 2 ) {
-							$query="SELECT id, soe_item_id, name, item_type, tier, description, slots, icon, recommended_level as level, skill_id_req, crafted
+							$query="SELECT id, soe_item_id, name, item_type, tier, description, slots, classic_icon, icon, recommended_level as level, skill_id_req, crafted
 											FROM `".ACTIVE_DB."`.items 
 											WHERE bPvpDesc = 0 AND (`name` rlike '".$itemName."' OR id = '".$itemName."') 
 											LIMIT 0,250";
@@ -351,7 +351,7 @@ switch($_GET['show'] ?? "")
 							break;
 						} else {
 
-							$query="SELECT id, soe_item_id, name, item_type, tier, description, slots, icon, recommended_level as level, adventure_default_level as ad_level, skill_id_req, crafted
+							$query="SELECT id, soe_item_id, name, item_type, tier, description, slots, classic_icon, icon, recommended_level as level, adventure_default_level as ad_level, skill_id_req, crafted
 											FROM `".ACTIVE_DB."`.items i
 											WHERE bPvpDesc = 0";  // has to be at least 1 param, so WHERE is assumed ok
 							// WHERE builder

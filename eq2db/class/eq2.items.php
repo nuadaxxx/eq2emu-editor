@@ -495,9 +495,13 @@ class eq2Items
 		}
 	}
 
-	function GetItemIconLink($item) {
+	function GetItemIconLink($item, $classicIcon=false) {
+		$field = "icon";
+		if($classicIcon) {
+			$field = "classic_icon";
+		}
 		return sprintf('eq2Icon.php?type=item&id=%s&tier=%s%s', 
-		$item['icon'], $item['tier'], $item['crafted'] ? "&crafted" : "");
+		$item[$field], $item['tier'], $item['crafted'] ? "&crafted" : "");
 	}
 
 	function GetEquipSlotsStringListFromBitmask($slots) {
@@ -649,6 +653,11 @@ class eq2Items
 						<td align="center" style="width:100px;background-color:black;"> <span id="tierTag"></span>
 							<br/> <img id="itemIcon" src="<?php echo $eq2Items->GetItemIconLink($data); ?>" /> 
 						</td>
+						<td align="center" style="width:100px;background-color:black;"> <font color="white">Classic Icon:</font> <br/><span id="tierClassicTag"></span>
+						<?php if($data['classic_icon'] > 0) { ?>
+							<img id="itemClassicIcon" src="<?php echo $eq2Items->GetItemIconLink($data, true); ?>" /> 
+						<?php } ?>
+						</td>
 					</tr>
 				</table>
 			</td>
@@ -683,6 +692,15 @@ class eq2Items
 			<td>
 				<input type="text" name="items|icon" value="<?=$data['icon'] ?>" style="width:50px" onkeyup="ReloadItemIcon()" />
 				<input type="hidden" name="orig_icon" value="<?=$data['icon'] ?>" /> 
+			</td>
+		</tr>
+		<tr>
+			<td></td><td></td>
+			<td></td><td></td>
+			<td align="right">classic icon:</td>
+			<td>
+				<input type="text" name="items|classic_icon" value="<?=$data['classic_icon'] ?>" style="width:50px" onkeyup="ReloadItemIcon()" />
+				<input type="hidden" name="orig_classic_icon" value="<?=$data['classic_icon'] ?>" /> 
 			</td>
 		</tr>
 		<tr>
