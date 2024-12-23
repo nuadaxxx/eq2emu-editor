@@ -2186,6 +2186,7 @@ function spawnlocation()
 	$strHTML .= $strOffset . "                      <th>respawn</th>\n";
 	$strHTML .= $strOffset . "                      <th>respawn_offset_low</th>\n";
 	$strHTML .= $strOffset . "                      <th>respawn_offset_high</th>\n";
+	$strHTML .= $strOffset . "                      <th>duplicated_spawn</th>\n";
 	$strHTML .= $strOffset . "                      <th>expire_timer</th>\n";
 	$strHTML .= $strOffset . "                      <th>grid_id</th>\n";
 	$strHTML .= $strOffset . "                      <th colspan='2'></th>\n";
@@ -2210,6 +2211,7 @@ function spawnlocation()
 		$strHTML .= $strOffset . "                        <td><input type='text' name='spawn_location_placement|respawn|new' value='300' style='width:50px;' /></td>\n";
 		$strHTML .= $strOffset . "                        <td><input type='text' name='spawn_location_placement|respawn_offset_low|new' value='0' style='width:50px;' /></td>\n";
 		$strHTML .= $strOffset . "                        <td><input type='text' name='spawn_location_placement|respawn_offset_high|new' value='0' style='width:50px;' /></td>\n";
+		$strHTML .= $strOffset . "                        <td><input type='text' name='spawn_location_placement|duplicated_spawn|new' value='1' style='width:50px;' /></td>\n";
 		$strHTML .= $strOffset . "                        <td><input type='text' name='spawn_location_placement|expire_timer|new' value='0' style='width:50px;' /></td>\n";
 		$strHTML .= $strOffset . "                        <td><input type='text' name='spawn_location_placement|grid_id|new' value='0' style='width:90px;' /></td>\n";
 		$strHTML .= $strOffset . "                        <td colspan='2'>\n";
@@ -2287,6 +2289,10 @@ function spawnlocation()
 			$strHTML .= $strOffset . "                    <td>\n";
 			$strHTML .= $strOffset . "                    <input type='text' name='spawn_location_placement|respawn_offset_high' value='" . $data['respawn_offset_high'] . "' style='width:50px;' />\n";
 			$strHTML .= $strOffset . "                    <input type='hidden' name='orig_respawn_offset_high' value='" . $data['respawn_offset_high'] . "' />\n";
+			$strHTML .= $strOffset . "                    </td>\n";
+			$strHTML .= $strOffset . "                    <td>\n";
+			$strHTML .= $strOffset . "                    <input type='text' name='spawn_location_placement|duplicated_spawn' value='" . $data['duplicated_spawn'] . "' style='width:50px;' />\n";
+			$strHTML .= $strOffset . "                    <input type='hidden' name='orig_duplicated_spawn' value='" . $data['duplicated_spawn'] . "' />\n";
 			$strHTML .= $strOffset . "                    </td>\n";
 			$strHTML .= $strOffset . "                    <td>\n";
 			$strHTML .= $strOffset . "                    <input type='text' name='spawn_location_placement|expire_timer' value='" . $data['expire_timer'] . "' style='width:50px;' />\n";
