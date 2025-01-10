@@ -1085,7 +1085,7 @@ function spell_tiers()
 			}
 		}
 		
-		if ($next_tier > 0 && $next_tier <= 10) {
+		if ($next_tier > 0 && $next_tier <= 12) {
 			$tier_options = $spells->GetSpellTiers($next_tier); 
 			
 			/*
@@ -1283,7 +1283,7 @@ function spell_data()
 				}
 			}
 
-			if ($next_tier > 0 && $next_tier <= 10) {
+			if ($next_tier > 0 && $next_tier <= 12) {
 		?>
 		<tr>
 			<td height="50" valign="bottom">Click &quot;Insert&quot; to add a new <em>tier</em> to this specific spell; tiers being Apprentice II, Adept I, or Master I, etc.</td>
@@ -1491,7 +1491,7 @@ function spell_display_effects()
 				}
 			}
 
-			if ($next_tier > 0 && $next_tier <= 10) {
+			if ($next_tier > 0 && $next_tier <= 12) {
 		?>
 		<tr>
 			<td height="50" valign="bottom">Click &quot;Insert&quot; to add a new <em>tier</em> to this specific spell; tiers being Apprentice II, Adept I, or Master I, etc.</td>

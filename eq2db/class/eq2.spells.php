@@ -131,12 +131,15 @@ class eq2Spells
 		1 => "Apprentice",
 		2 => "Apprentice II",
 		3 => "Apprentice III",
-		4 => "Journeyman",
-		5 => "Adept",
-		7 => "Expert",
-		9 => "Master",
-		10 => "Grandmaster",
-		11 => "Ancient"
+		4 => "Apprentice IV",
+		5 => "Adept I",
+		5 => "Adept II",
+		7 => "Adept III",
+		8 => "Adept IV",
+		9 => "Master I",
+		10 => "Master II",
+		11 => "Master III",
+		12 => "Master IV"
 	);
 
 	var $emuSpellToggles = 
