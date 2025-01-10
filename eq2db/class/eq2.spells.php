@@ -133,7 +133,7 @@ class eq2Spells
 		3 => "Apprentice III",
 		4 => "Apprentice IV",
 		5 => "Adept I",
-		5 => "Adept II",
+		6 => "Adept II",
 		7 => "Adept III",
 		8 => "Adept IV",
 		9 => "Master I",
