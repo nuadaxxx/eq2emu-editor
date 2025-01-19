@@ -43,116 +43,126 @@ var LuaHighlightRules = function() {
     var deprecatedIn5152 = ("setn|foreach|foreachi|gcinfo|log10|maxn");
 
     var EQ2EmuKeywords = (
-        "AddCoin|AddControlEffect|AddConversationOption|AddHate|"+
-        "AddImmunitySpell|AddLanguage|AddLootCoin|AddLootItem|"+
-        "AddMultiFloorLift|AddOptionWindowOption|AddPrimaryEntityCommand|AddProc|"+
-        "AddQuestPrereqClass|AddQuestPrereqFaction|AddQuestPrereqItem|AddQuestPrereqModelType|"+
+        "AddCharacterTitle|AddCoin|AddControlEffect|AddConversationOption|AddHate|AddIconValue|"+
+        "AddImmunitySpell|AddLanguage|AddLootCoin|AddLootItem|AddMasterTitle|"+
+        "AddMultiFloorLift|AddOptionWindowOption|AddPlayerMail|AddPlayerMailByCharID|AddPrimaryEntityCommand|AddPrimaryEntityCommandAllSpawns|"+
+        "AddProc|AddProcExt|AddQuestPrereqClass|AddQuestPrereqFaction|AddQuestPrereqItem|AddQuestPrereqModelType|"+
         "AddQuestPrereqQuest|AddQuestPrereqRace|AddQuestPrereqTradeskillClass|AddQuestPrereqTradeskillLevel|"+
         "AddQuestRewardCoin|AddQuestRewardFaction|AddQuestRewardItem|AddQuestSelectableRewardItem|"+
         "AddQuestStep|AddQuestStepChat|AddQuestStepCompleteAction|AddQuestStepCraft|"+
-        "AddQuestStepFailureAction|AddQuestStepHarvest|AddQuestStepKill|AddQuestStepLocation|"+
-        "AddQuestStepObtainItem|AddQuestStepProgressAction|AddQuestStepSpell|AddSkillBonus|"+
-        "AddSpawnAccess|AddSpawnIDAccess|AddSpawnSpellBonus|AddSpellBonus|"+
+        "AddQuestStepFailureAction|AddQuestStepHarvest|AddQuestStepKill|AddQuestStepKillByRace|AddQuestStepLocation|"+
+        "AddQuestStepObtainItem|AddQuestStepProgressAction|AddQuestStepSpell|AddQuestStepZoneLoc|AddQuestUsableItem|AddRecipeBookToPlayer|AddSkill|AddSkillBonus|"+
+        "AddSpawnAccess|AddSpawnIDAccess|AddSpawnProximity|AddSpawnSpellBonus|AddSpawnToGroup|AddSpellBonus|"+
         "AddSpellBookEntry|AddSpellTimer|AddStepProgress|AddThreatTransfer|"+
-        "AddTimer|AddToWard|AddTransportSpawn|AddWard|"+
+        "AddTimer|AddToWard|AddTransportSpawn|AddWard|AddWaypoint|"+
         "ApplySpellVisual|Attack|"+
 
         "Bind|BlurVision|BreatheUnderwater|"+
 
-        "CancelSpell|CanHarvest|CanReceiveQuest|CastEntityCommand|"+
-        "CastSpell|Charm|CheckRaceType|ClearEncounter|"+
-        "ClearHate|CloseConversation|CreateOptionWindow|CloseItemConversation|"+
-        "CompareSpawns|CopySpawnAppearance|CreateConversation|CureByControlEffect|"+
+        "CanHarvest|CanReceiveQuest|CanSeeInvis|CancelSpell|CastCustomSpell|CastEntityCommand|"+
+        "CastSpell|ChangeFaction|ChangeHandIcon|Charm|CheckLOS|CheckLOSByCoordinates|CheckRaceType|ClearEncounter|"+
+        "ClearHate|ClearRunback|ClearRunningLocations|CloseConversation|CloseDoor|CloseItemConversation|"+
+        "CompareSpawns|CompleteTransmute|CopySpawnAppearance|CreateConversation|CreateOptionWindow|CreateWidgetRegion|CureByControlEffect|"+
         "CureByType|"+
 
-        "Despawn|DismissPet|"+
+        "DamageEquippedItems|DamageSpawn|DeleteDBShardID|DeleteSpellBook|Despawn|DespawnByLocationID|DismissPet|DisplayText|"+
 
-        "Emote|EndAutoMount|"+
+        "Emote|EnableGameEvent|EndAutoMount|Evac|"+
 
-        "FaceTarget|"+
+        "FaceTarget|FlashWindow|"+
 
-        "Gate|GetAgi|GetAgiBase|GetCharmedPet|"+
-        "GetArchetypeName|GetClass|GetClassName|GetClientVersion|"+
-        "GetCoinMessage|GetCosmeticPet|GetCurrentZoneSafeLocation|GetDeityPet|"+
-        "GetDistance|GetEncounter|GetEncounterSize|GetEquippedItemByID|"+
-        "GetEquippedItemBySlot|GetFactionAmount|GetFollowTarget|GetGender|"+
-        "GetGroup|GetHateList|GetHeading|GetHP|"+
-        "GetInt|GetIntBase|GetItemByID|GetItemCount|"+
-        "GetItemSkillReq|GetItemType|GetLevel|GetLootCoin|"+
+        "Gate|GetAAInfo|GetAggroRadius|GetAgi|GetAgiBase|GetAlignment|"+
+        "GetArchetypeName|GetArrowColor|GetBaseAggroRadius|GetBoundZoneID|GetCanBind|GetCanEvac|GetCanGate|GetCharacterFlag|GetCharacterID|"+
+		"GetCharmedPet|GetClass|GetClass|GetClassName|GetClientVersion|"+
+        "GetCoinMessage|GetCosmeticPet|GetCurrentHP|GetCurrentPower|GetCurrentZoneSafeLocation|GetDeity|GetDeityPet|"+
+        "GetDifficulty|GetDistance|GetEncounter|GetEncounterSize|GetEquippedItemByID|"+
+        "GetEquippedItemBySlot|GetFactionAmount|GetFactionID|GetFollowTarget|GetGender|"+
+        "GetGroup|GetHateList|GetHeading|GetHP|GetInfoStructFloat|GetInfoStructSInt|GetInfoStructString|GetInfoStructUInt|"+
+        "GetInt|GetIntBase|GetItemByID|GetItemCount|GetItemEffectType|GetItemID|"+
+        "GetItemSkillReq|GetItemType|GetLevel|GetLootCoin|GetLootDropType|GetLootTier|"+
         "GetMaxHP|GetMaxHPBase|GetMaxPower|GetMaxPowerBase|"+
-        "GetModelType|GetMostHated|GetMount|GetName|"+
-        "GetOwner|GetPet|GetPlayerHistory|GetPlayersInZone|"+
+        "GetModelType|GetMostHated|GetMount|GetName|GetOrigX|GetOrigY|GetOrigZ|"+
+        "GetOwner|GetPCTOfHP|GetPCTOfPower|GetPassengerSpawnList|GetPet|GetPlayerHistory|GetPlayersInZone|"+
         "GetPower|GetQuest|GetQuestCompleteCount|GetQuestFlags|"+
         "GetQuestStep|GetQuestStepProgress|GetRace|GetRaceBaseType|"+
-        "GetRaceType|GetRaceName|GetRunbackDistance|GetServerVariable|"+
-        "GetSkill|GetSkillMaxValue|GetSkillName|GetSkillValue|"+
-        "GetSpawn|GetSpawnByGroupID|GetSpawnByLocationID|GetSpawnGroupID|"+
-        "GetSpawnID|GetSpawnLocationID|GetSpawnLocationPlacementID|GetSpeed|"+
-        "GetSpellTriggerCount|GetSta|GetStaBase|GetStr|"+
-        "GetStrBase|GetTarget|GetTaskGroupStep|GetTempVariable|"+
-        "GetTradeskillClass|GetTradeskillClassName|GetTradeskillLevel|GetVariableValue|"+
-        "GetWardAmountLeft|GetWis|GetWisBase|GetX|"+
-        "GetY|GetZ|GetZone|GetZoneID|"+
-        "GetZoneName|GiveLoot|GiveQuestItem|GiveQuestReward|"+
+        "GetRaceName|GetRaceType|GetRandomSpawnByID|GetRuleFlagBool|GetRuleFlagFloat|GetRuleFlagInt32|GetRunbackDistance|GetServerVariable|"+
+        "GetShardCharID|GetShardCreatedTimestamp|GetShardID|GetSkill|GetSkillIDByName|GetSkillMaxValue|GetSkillName|GetSkillValue|"+
+        "GetSpawn|GetSpawnByGroupID|GetSpawnByLocationID|GetSpawnByRailID|GetSpawnFromList|GetSpawnGroupID|"+
+        "GetSpawnID|GetSpawnListByRailID|GetSpawnListBySpawnID|GetSpawnListSize|GetSpawnLocationID|GetSpawnLocationPlacementID|GetSpeed|"+
+        "GetSpell|GetSpellData|GetSpellDataIndex|GetSpellDisplayEffect|GetSpellID|GetSpellInitialTarget|GetSpellName|GetSpellTier|GetSpellTriggerCount|GetSta|GetStaBase|GetStr|"+
+        "GetStrBase|GetTSArrowColor|GetTarget|GetTaskGroupStep|GetTempVariable|"+
+        "GetTemporaryTransportID|GetTradeskillClass|GetTradeskillClassName|GetTradeskillLevel|GetTutorialStep|GetVariableValue|"+
+        "GetWardAmountLeft|GetWardValue|GetWis|GetWisBase|GetWorldTimeHour|GetWorldTimeMinute|GetWorldTimeMonth|GetWorldTimeYear|GetX|"+
+        "GetY|GetZ|GetZone|GetZoneExpansionFlag|GetZoneHolidayFlag|GetZoneID|GetZoneLockoutTimer|"+
+        "GetZoneName|GiveExp|GiveLoot|GiveQuestItem|GiveQuestReward|"+
 
-        "HandInCollections|Harvest|HasCollectionsToHandIn|HasCompletedQuest|"+
-        "HasFreeSlot|HasGroup|HasItem|HasLanguage|"+
-        "HasMoved|HasPendingLootItem|HasPendingLoot|HasQuest|"+
-        "HasRecipeBook|HasRecovered|HasSpellEffect|"+
+        "HandInCollections|Harvest|HasCoin|HasCollectionsToHandIn|HasCompletedQuest|HasControlEffect|"+
+        "HasFreeSlot|HasGroup|HasItem|HasItemEquipped|HasLanguage|HasLootItem|"+
+        "HasMoved|HasPendingLootItem|HasPendingLoot|HasQuest|HasQuestRewardItem|"+
+        "HasRecipeBook|HasRecovered|HasSkill|HasSpell|HasSpellEffect|HasSpellImmunity|"+
 
+        "InFront|InLava|InWater|IncreaseSkillCapsByType|InstructionWindow|InstructionWindowClose|InstructionWindowGoal|"+
         "Interrupt|IsAlive|IsBehind|IsBindAllowed|"+
-        "IsCasting|IsEpic|IsFlanking|IsFollowing|"+
+        "IsCastOnAggroComplete|IsCasting|IsEntity|IsEpic|IsFlanking|IsFollowing|"+
         "IsGateAllowed|IsGroundSpawn|IsHeroic|IsInCombat|"+
-        "IsInvis|IsMezzed|IsMezzedOrStunned|IsNight|"+
-        "IsOnAutoMount|IsPlayer|IsPet|IsStealthed|"+
-        "IsStunned|"+
+        "IsInvis|IsInvulnerable|IsMezzed|IsMezzedOrStunned|IsNight|"+
+        "IsOnAutoMount|IsOpen|IsPet|IsPlayer|IsRunning|IsSpawnGroupAlive|IsStealthed|"+
+        "IsStunned|IsTransportSpawn|IsZoneLoading|"+
 
         "KillSpawn|KillSpawnByDistance|Knockback|"+
 
         "LastSpellAttackHit|"+
 
-        "ModifyHP|ModifyPower|MovementLoopAddLocation|MoveToLocation|"+
+        "MakeRandomFloat|MakeRandomInt|"+
+        "ModifyHP|ModifyMaxHP|ModifyMaxPower|ModifyPower|MoveToLocation|MovementLoopAdd|MovementLoopAddLocation|MoveToLocation|"+
 
-        "OfferQuest|"+
+        "OfferQuest|OpenDoor|"+
 
-        "PlayAnimation|PlayFlavor|PlaySound|PlayVoice|"+
-        "ProcDamage|ProcessSpell|ProcessMelee|ProvidesQuest|"+
+        "PauseMovement|PerformCameraShake|"+
+        "PlayAnimation|PlayFlavor|PlayFlavorID|PlaySound|PlayVoice|"+
+        "ProcDamage|ProcHate|ProcessMelee|ProcessSpell|ProvidesQuest|"+
 
         "QuestIsComplete|QuestReturnNPC|QuestStepIsComplete|"+
 
         "RegisterQuest|RemoveCoin|RemoveControlEffect|RemoveImmunitySpell|"+
-        "RemoveInvis|RemoveItem|RemoveLootItem|RemoveProc|"+
-        "RemoveQuestStep|RemoveSkillBonus|RemoveSpawnAccess|RemoveSpawnIDAccess|"+
-        "RemoveSpellBonus|RemoveStealth|RemoveThreatTransfer|RemoveTriggerFromSpell|"+
-        "RemoveWard|ResetIllusion|ResetQuestStep|Resurrect|"+
+        "RemoveInvis|RemoveItem|RemoveLootItem|RemovePrimaryEntityCommand|RemoveProc|"+
+        "RemoveQuestStep|RemoveRecipeFromPlayer|RemoveRegion|RemoveSkill|RemoveSkillBonus|RemoveSpawnAccess|RemoveSpawnIDAccess|"+
+        "RemoveSpawnSpellBonus|RemoveSpellBonus|RemoveSpellBookEntry|RemoveStealth|RemoveThreatTransfer|RemoveTriggerFromSpell|"+
+        "RemoveWard|RemoveWaypoint|RemoveWidgetFromSpawnMap|ReplaceWidgetFromClient|ResetCharacterTitlePrefix|ResetCharacterTitleSuffix|"+
+		"ResetIllusion|ResetQuestStep|Resurrect|"+
         "Runback|"+
 
-        "Say|SayOOC|SendMessage|SendOptionWindow|"+
-        "SendPopUpMessage|SetAdventureClass|SetAgi|SetAgiBase|"+
-        "SetBrainTick|SetCompletedDescription|SetCompleteFlag|SetFailureTimer|"+
-        "SetFollowTarget|SetGridID|SetHeading|SetHP|"+
-        "SetIllusion|SetInCombat|SetInt|SetIntBase|"+
-        "SetItemCount|SetLocationProximityFunction|SetLootCoin|SetLuaBrain|"+
+        "Say|SayOOC|SendMessage|SendHearCast|SendMessage|SendNewAdventureSpells|SendNewTradeskillSpells|SendOptionWindow|"+
+        "SendPopUpMessage|SendStateCommand|SendTimeUpdate|SendTransporters|SendUpdateDefaultCommand|SendWaypoints|SetAAInfo|SetAccessToEntityCommand|"+
+		"SetAccessToEntityCommandByCharID|SetAdventureClass|SetAggroRadius|SetAgi|SetAgiBase|SetAlignment|"+
+        "SetBrainTick|SetCanBind|SetCanEvac|SetCanGate|SetCastOnAggroComplete|SetCharSheetChanged|SetCharacterTitlePrefix|SetCharacterTitleSuffix|"+
+		"SetCoinTmpReward|SetCompleteFlag|SetCompletedDescription|SetDeity|SetEquipment|SetEquippedItem|SetEquippedItemByID|"+
+		"SetFactionID|SetFailureTimer|"+
+        "SetFollowTarget|SetGridID|SetHeading|SetHP|SetPower|"+
+        "SetIllusion|SetInCombat|SetInfoFlag|SetInfoStructFloat|SetInfoStructSInt|SetInfoStructString|SetInfoStructUInt|SetInt|SetIntBase|"+
+        "SetInvulnerable|SetItemCount|SetLocationProximityFunction|SetLootCoin|SetLootDropType|SetLootTier|SetLuaBrain|"+
         "SetMaxHP|SetMaxHPBase|SetMaxPower|SetMaxPowerBase|"+
-        "SetModelType|SetMount|SetMountColor|SetPlayerLevel|"+
-        "SetPlayerProximityFunction|SetPlayerHistory|SetPosition|SetPower|"+
+        "SetModelType|SetMount|SetMountColor|SetPlayerHistory|SetPlayerLevel|"+
+        "SetPlayerPOVGhost|SetPlayerProximityFunction|SetPosition|SetPower|"+
         "SetQuestCompleteAction|SetQuestFeatherColor|SetQuestFlags|SetQuestPrereqLevel|"+
         "SetQuestRepeatable|SetQuestRewardComment|SetQuestRewardExp|SetQuestRewardStatus|"+
-        "SetQuestTimer|SetQuestTimerComplete|SetQuestYellow|SetRequiredHistory|"+
-        "SetRequiredQuest|SetServerControlFlag|SetServerVariable|SetSkillMaxValue|"+
-        "SetSkillValue|SetSpawnAnimation|SetSpeed|SetSpeedMultiplier|"+
-        "SetSpellList|SetSpellSnareValue|SetSpellTriggerCount|SetSta|"+
-        "SetStaBase|SetStepComplete|SetStepFailed|SetStr|"+
-        "SetStrBase|SetSuccessTimer|SetTarget|SetTempVariable|"+
-        "SetTradeskillClass|SetTradeskillLevel|SetVision|SetWis|"+
-        "SetWisBase|Shout|SpawnByLocationID|SpawnMob|"+
-        "SpawnMove|SpawnSet|SpawnSetByDistance|SpellDamage|"+
-        "SpellHeal|StartAutoMount|StartConversation|StartDialogConversation|"+
-        "StartHeroicOpportunity|Stealth|SummonCosmeticPet|SummonDeityPet|"+
+        "SetQuestTimer|SetQuestTimerComplete|SetQuestYellow|SetRailID|SetRequiredHistory|"+
+        "SetRequiredQuest|SetSeeHide|SetSeeInvis|SetServerControlFlag|SetServerVariable|SetSkillMaxValue|"+
+        "SetSkillValue|SetSpawnAnimation|SetSpawnGroupID|SetSpeed|SetSpeedMultiplier|"+
+        "SetSpellData|SetSpellDataIndex|SetSpellDisplayEffect|SetSpellList|SetSpellSnareValue|SetSpellTriggerCount|SetSta|"+
+        "SetStaBase|SetStatusTmpReward|SetStepComplete|SetStepFailed|SetStr|"+
+        "SetStrBase|SetSuccessTimer|SetTarget|SetTempVariable|SetTemporaryTransportID|"+
+        "SetTradeskillClass|SetTradeskillLevel|SetTutorialStep|SetVision|SetVisualFlag|SetWis|"+
+        "SetWisBase|SetWorldTime|SetZoneExpansionFlag|SetZoneHolidayFlag|Shout|ShowLootWindow|ShowWindow|SpawnMob|SpawnByLocationID|SpawnByGroupID|SpawnMove|SpawnSet|"+
+        "SpawnSetByDistance|SpellDamage|SpellDamageExt|SpellHeal|SpellHealPct|"+
+        "StartAutoMount|StartConversation|StartDialogConversation|"+
+        "StartHeroicOpportunity|StartTransmute|Stealth|StopMovement|StopTimer|SummonCosmeticPet|SummonDeityPet|"+
         "SummonDumbFirePet|SummonItem|SummonPet|"+
-        "ToggleFollow|ToggleTracking|"+
-        "UpdateQuestDescription|UpdateQuestStepDescription|UpdateQuestTaskGroupDescription|UpdateQuestZone|"+
-        "UseWidget|Zone|MakeRandomInt|"+
+        
+		"ToggleCharacterFlag|ToggleFollow|ToggleTracking|"+
+		
+        "UnequipSlot|UpdateQuestDescription|UpdateQuestStepDescription|UpdateQuestTaskGroupDescription|UpdateQuestZone|"+
+        "UseWidget|Zone|"+
         
         "Dialog|New|Start|Test|AddDialog|AddRequirement|AddVoiceover|AddEmote|AddOption|AddOptionRequirement|"+
         "SetIsSignature"
