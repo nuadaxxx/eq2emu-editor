@@ -1588,6 +1588,7 @@ function spell_classes()
 						<td width="150"><strong>adventure_class_id</strong></td>
 						<td width="150"><strong>tradeskill_class_id</strong></td>
 						<td width="100"><strong>level</strong></td>
+						<td width="100"><strong>classic_level</strong></td>
 						<td>&nbsp;</td>
 					</tr>
 					<?php
@@ -1626,6 +1627,10 @@ function spell_classes()
 						<td>
 							<input type="text" name="spell_classes|level" value="<?php print($row['level']); ?>" style="width:40px;" />
 							<input type="hidden" name="orig_level" value="<?php print($row['level']); ?>" />
+						</td>
+						<td>
+							<input type="text" name="spell_classes|classic_level" value="<?php print($row['classic_level']); ?>" style="width:40px;" />
+							<input type="hidden" name="orig_classic_level" value="<?php print($row['classic_level']); ?>" />
 						</td>
 						<td>
 						<?php if($eq2->CheckAccess(G_DEVELOPER)) { ?>
@@ -1667,6 +1672,7 @@ function spell_classes()
 						<td width="150"><strong>adventure_class_id</strong></td>
 						<td width="150"><strong>tradeskill_class_id</strong></td>
 						<td width="100"><strong>level</strong></td>
+						<td width="100"><strong>classic_level</strong></td>
 						<td>&nbsp;</td>
 					</tr>
 					<tr>
@@ -1688,6 +1694,7 @@ function spell_classes()
 							</select>
 						</td>
 						<td><input type="text" name="spell_classes|level|new" value="1" style="width:40px;" /></td>
+						<td><input type="text" name="spell_classes|classic_level|new" value="1" style="width:40px;" /></td>
 						<td><input type="submit" name="cmd" value="Insert" class="submit" /></td>
 					</tr>
 					<input type="hidden" name="table_name" value="spell_classes" />
