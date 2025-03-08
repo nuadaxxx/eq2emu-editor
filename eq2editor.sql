@@ -11622,7 +11622,9 @@ INSERT INTO `roles` VALUES
 (16,'General','g:developer',208,'Content Designer',1),
 (17,'General','g:builder',1232,'World Builder',1),
 (18,'Admin','a:tooldev',2048,'DBEditor Developer',1),
-(19,'General','g:admin',4063,'General Admin',1);
+(19,'General','g:admin',4063,'General Admin',1),
+(20,'Menu','m:recipes',16384,'Access to Recipes',1),
+(21,'Menu','m:recipecomponents',32768,'Access to Recipes Components',1);
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
