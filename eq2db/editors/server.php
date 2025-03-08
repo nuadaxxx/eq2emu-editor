@@ -2,7 +2,13 @@
 define('IN_EDITOR', true);
 include("header.php"); 
 
-if ( !$eq2->CheckAccess(M_SERVER) )
+if(($_GET['page'] ?? "") == "recipes" || ($_GET['page'] ?? "") == "recipe_comp") {
+	if(($_GET['page'] ?? "") == "recipes" && !$eq2->CheckAccess(M_RECIPES))
+		die("ACCESS: Denied!");
+	if(($_GET['page'] ?? "") == "recipe_comp" && !$eq2->CheckAccess(M_RECIPECOMPONENTS))
+		die("ACCESS: Denied!");
+}
+else if ( !$eq2->CheckAccess(M_SERVER) )
 	die("ACCESS: Denied!");
 	
 include("../class/eq2.server.php");
