@@ -161,7 +161,9 @@ if( $GLOBALS['config']['debug_forms'] && isset($_POST['cmd']) )
                     M_SPAWNS     => "Spawns|spawns.php",
                     M_SERVER     => "Server|server.php",
                     M_ZONES      => "Zones|zones.php",
-                    M_ADMIN      => "Admin|_admin.php"
+                    M_ADMIN      => "Admin|_admin.php",
+                    M_RECIPES    => "Recipes|server.php?page=recipes",
+                    M_RECIPECOMPONENTS   => "Recipe Components|server.php?page=recipe_comp"
                 ];
                 
                 $empty_cell = 0;
