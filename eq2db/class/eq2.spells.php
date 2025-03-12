@@ -165,10 +165,18 @@ class eq2Spells
 	public function CheckRawSpellExists()
 	{
 		global $eq2;
-		
-		$eq2->SQLQuery = sprintf("SELECT COUNT(id) as CNT FROM `".PARSER_DB."`.raw_spells WHERE spell_id = %s", $this->spell_crc);
-		$ret = $eq2->RunQuerySingle();
-		return $ret['CNT'] > 0 ? true : false;
+		try {
+			$eq2->SQLQuery = sprintf("show tables from `".PARSER_DB."` like 'raw_spells'", $this->spell_crc);
+			$ret = $eq2->RunQuerySingle('', true, true);
+			if ($ret->num_rows > 0) {
+				$eq2->SQLQuery = sprintf("SELECT COUNT(id) as CNT FROM `".PARSER_DB."`.raw_spells WHERE spell_id = %s", $this->spell_crc);
+				$ret = $eq2->RunQuerySingle('', true, true);
+				return $ret['CNT'] > 0 ? true : false;
+			}
+		}catch(PDOException $e) {
+			
+		}
+		return false;
 	}
 	
 	public function CheckSOESpellExists()

@@ -1193,7 +1193,7 @@ class eq2Cls
 	}
 
 	/* SELECT: Use this RunQuery to return a single-row result set */
-	public function RunQuerySingle($sql = '', $bLog = true)
+	public function RunQuerySingle($sql = '', $bLog = true, $ignore_error = false)
 	{
 		global $GLOBALS;
 		/*** Override $this with passed parameters ***/
@@ -1211,8 +1211,12 @@ class eq2Cls
 			$this->AddDebugQuery(__FUNCTION__, $this->SQLQuery);
 		}
 
-		if( !$result = $this->db->sql_query($this->SQLQuery) )
-			$this->DBError();
+		if( !$result = $this->db->sql_query($this->SQLQuery) ) {
+			if(!$ignore_error)
+				$this->DBError();
+			$num_rows = 0;
+			$rtn = 0;
+		}
 		else
 		{
 			$num_rows = $this->db->sql_numrows($result);
