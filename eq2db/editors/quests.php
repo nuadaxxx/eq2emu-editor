@@ -357,6 +357,21 @@ function RegisterQuest()
 			$strHTML .= $strOffset . "                </td>\n";
 			$strHTML .= $strOffset . "              </tr>\n";
 
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td class='Label'>Minimum Earned Status:</td>\n";
+			$strHTML .= $strOffset . "                <td colspan='2'>\n";
+			$strHTML .= $strOffset . "                  <input type='text' name='quests|status_to_earn_min' value='" . $data['status_to_earn_min'] . "' style='width:400px;' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='orig_status_to_earn_min' value='" . $data['status_to_earn_min'] . "' />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td class='Label'>Maximum Earned Status:</td>\n";
+			$strHTML .= $strOffset . "                <td colspan='2'>\n";
+			$strHTML .= $strOffset . "                  <input type='text' name='quests|status_to_earn_max' value='" . $data['status_to_earn_max'] . "' style='width:400px;' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='orig_status_to_earn_max' value='" . $data['status_to_earn_max'] . "' />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			
 			$strHTML .= $strOffset . "                <script>\n";
 			$strHTML .= $strOffset . "                  function updateChkBox(){\n";
 			$strHTML .= $strOffset . "                    if(document.getElementById('isDeleteable').checked == true){\n";
@@ -367,12 +382,16 @@ function RegisterQuest()
 			$strHTML .= $strOffset . "                    if(document.getElementById('isShareable').checked == true){\n";
 			$strHTML .= $strOffset . "                      document.getElementById('isShareable_holder').value = 1;\n";
 			$strHTML .= $strOffset . "                    }else{\n";
-			$strHTML .= $strOffset . "                      document.getElementById('isShareable_holder').value = 0;\n";
+			$strHTML .= $strOffset . "                      document.getElementById('hideReward_holder').value = 0;\n";
+			$strHTML .= $strOffset . "                    }\n";
+			$strHTML .= $strOffset . "                    if(document.getElementById('hideReward').checked == true){\n";
+			$strHTML .= $strOffset . "                      document.getElementById('hideReward_holder').value = 1;\n";
+			$strHTML .= $strOffset . "                    }else{\n";
+			$strHTML .= $strOffset . "                      document.getElementById('hideReward_holder').value = 0;\n";
 			$strHTML .= $strOffset . "                    }\n";
 			$strHTML .= $strOffset . "                  }\n";
 			$strHTML .= $strOffset . "                </script>\n";
 			$strHTML .= $strOffset . "              <tr>\n";
-			$strHTML .= $strOffset . "                <td></td>\n";
 			$strHTML .= $strOffset . "                <td width='100' class='Label' >Deleteable:<input id='isDeleteable' name='isDeleteable' type='checkbox' " . ($data['deleteable'] == 1?'checked':'') ." onclick=\"updateChkBox();\">\n";
 			$strHTML .= $strOffset . "                <input type='hidden' id='isDeleteable_holder'  name='quests|deleteable' value=\"" . $data['deleteable'] . "\" />\n";
 			$strHTML .= $strOffset . "                <input type='hidden' id='orig_deleteable' name='orig_deleteable' value=\"" . $data['deleteable'] . "\" />\n";
@@ -380,6 +399,10 @@ function RegisterQuest()
 			$strHTML .= $strOffset . "                <td width='100' class='Label' >Sharable:<input id='isShareable' name='isShareable' type='checkbox' " . ($data['shareable_flag'] == 1?'checked':'') ." onclick=\"updateChkBox();\">\n";
 			$strHTML .= $strOffset . "                <input type='hidden' id='isShareable_holder'  name='quests|shareable_flag' value=\"" . $data['shareable_flag'] . "\" />\n";
 			$strHTML .= $strOffset . "                <input type='hidden' id='orig_Shareable' name='orig_shareable_flag' value=\"" . $data['shareable_flag'] . "\" />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "                <td width='100' class='Label' >Hide Reward:<input id='hideReward' name='hideReward' type='checkbox' " . ($data['hide_reward'] == 1?'checked':'') ." onclick=\"updateChkBox();\">\n";
+			$strHTML .= $strOffset . "                <input type='hidden' id='hideReward_holder'  name='quests|hide_reward' value=\"" . $data['hide_reward'] . "\" />\n";
+			$strHTML .= $strOffset . "                <input type='hidden' id='orig_hideReward' name='orig_hide_reward' value=\"" . $data['hide_reward'] . "\" />\n";
 			$strHTML .= $strOffset . "                </td>\n";
 
 			$strHTML .= $strOffset . "              </tr>\n";
@@ -488,6 +511,14 @@ function RegisterQuest()
 			$strHTML .= $strOffset . "                  <strong>* RELATIVE PATH!</strong> ie. Quests/ZoneName/script_name.lua<br />\n";
 			$strHTML .= $strOffset . "                  <input type='text' id='questScriptPath' name='quests|lua_script|new' value='' style='width:400px;' />\n";
 			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td width='100' align='right'>Minimum Earned Status:</td>\n";
+			$strHTML .= $strOffset . "                <td><input type='text' name='quests|status_to_earn_min|new' value='0' style='width:400px;' /></td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td width='100' align='right'>Maximum Earned Status:</td>\n";
+			$strHTML .= $strOffset . "                <td><input type='text' name='quests|status_to_earn_max|new' value='0' style='width:400px;' /></td>\n";
 			$strHTML .= $strOffset . "              </tr>\n";
 			$strHTML .= $strOffset . "              <tr>\n";
 			$strHTML .= $strOffset . "                <td colspan='2' align='center'>\n";
