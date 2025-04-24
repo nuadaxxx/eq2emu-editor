@@ -1817,10 +1817,13 @@ class eq2Cls
 				break;
 				
 			case "SpawnScripts":
-				$template_body .= "function spawn(NPC)\r\n\r\nend\r\n\r\n";
+				$template_body .= "require \"SpawnScripts/Generic/NPCModule\"\r\n\r\n";
+				$template_body .= "function spawn(NPC)\r\n";
+				$template_body .= "    NPCModule(NPC, Spawn)\r\nend\r\n\r\n";
 				$template_body .= "function hailed(NPC, Spawn)\r\n\tFaceTarget(NPC, Spawn)\r\nend\r\n\r\n";
 				$template_body .= "function respawn(NPC)\r\n\tspawn(NPC)\r\nend";
 				break;
+
 
 			case "Quests":
 				// Quests require a different header... so overwrite the one above
