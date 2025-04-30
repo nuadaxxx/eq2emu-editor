@@ -109,12 +109,14 @@ switch(strtolower($_POST['cmd'] ?? ""))
 	case "create"				: 
 		if( $_POST['table_name'] == "spawn_scripts" )
 			$eq2->SaveLUAScript();
+		else if( $_POST['table_name'] == "spawn_loot" ) {
+			if (!$eq2->CheckAccess(G_DEVELOPER)) die('denied');
+			$spawns->CreateNewLootTable(); 
+		}
 		else if (isset($_GET['new']) ) {
 			if (!$eq2->CheckAccess(G_DEVELOPER)) die('lolno');
 			$spawns->CreateNewSpawn();
 		}
-		else
-			$spawns->CreateNewLootTable(); 
 		break;
 	case "sml (5px)"		: $spawns->SetXZOffsets(5); break;
 	case "med (10px)"		: $spawns->SetXZOffsets(10); break;
@@ -2732,12 +2734,13 @@ function spawn_loot()
 						<td>
 							<input type="hidden" name="table_name" value="spawn_loot"/>
 							<input type="hidden" name="spawn_loot|spawn_id" value="<?=$spawns->spawn_id?>"/>
-							<input id="lt_txtSearch" type="text" autocomplete="off" onkeyup="LootTableLookupAJAX(true);" style="width:60px" name="spawn_loot|loottable_id" value=""/>
+							<?php $new_id = $eq2->GetNextIDX("loottable", "id"); ?>
+							<input id="lt_txtSearch" type="text" autocomplete="off" onkeyup="LootTableLookupAJAX(true);" style="width:60px" name="spawn_loot|loottable_id" value="<?=$new_id?>"/>
 							<div id="lt_search_suggest"></div>
 						</td>
 						<td><strong>New Entry</strong></td>
 						<td align="center">
-							<input type="submit" name="cmd" value="Insert"/>
+							<input type="submit" name="cmd" value="create"/>
 						</td>
 						</form>
 					</tr>

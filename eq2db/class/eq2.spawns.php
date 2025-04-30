@@ -136,7 +136,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$loottable_id = $_POST['spawn_loot|loottable_id|new'];
+		$loottable_id = $_POST['spawn_loot|loottable_id'];
 		
 		if( $loottable_id > 0 )
 		{
