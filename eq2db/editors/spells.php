@@ -810,7 +810,6 @@ function spells()
 					<input type="button" value="Split" class="submit" onclick="dosub('<?= $querystring ?>&action=split'); return false;" />&nbsp;
 					<?php endif; ?>
 					<input type="submit" name="cmd" value="Census" class="submit" <?= $soe_button_text ?> />&nbsp;
-					<input type="submit" name="cmd" value="RAW" class="submit" <?php if( !$spells->CheckRawSpellExists() ) print("disabled") ?> />&nbsp;
 					<input type="hidden" name="object_id" value="<?= $spells->spell_name ?>|<?= $spells->spell_id ?>" />
 					<input type="hidden" name="table_name" value="spells" />
 				</td>
