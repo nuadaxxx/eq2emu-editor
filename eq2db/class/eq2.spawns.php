@@ -1066,7 +1066,7 @@ class eq2Spawns
 							if( is_array($merchants) )
 								$merchantListOptions = "";
 								foreach($merchants as $key=>$val) 
-									$merchantListOptions .= sprintf('<option value="%s"%s>%s</option>', $val['merchant_id'], ( $val['merchant_id'] == $data['merchant_id'] ) ? " selected" : "", $val['description']);
+									$merchantListOptions .= sprintf('<option value="%s"%s>%s</option>', $val['merchant_id'], ( $val['merchant_id'] == $data['merchant_id'] ) ? " selected" : "", htmlspecialchars($val['description'], ENT_QUOTES, 'UTF-8'));
 							?>
 							<select name="spawn|merchant_id" style="width:250px">
 								<option value="0">N/A</option>
