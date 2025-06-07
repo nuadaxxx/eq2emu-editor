@@ -571,6 +571,13 @@ function spells()
 										<input type="hidden" name="orig_fade_message" value="<?= $row['fade_message'] ?>" />
 									</td>
 								</tr>
+								<tr>
+									<td class="Label">fade_message_others:</td>
+									<td colspan="3" class="Detail">
+										<input type="text" name="spells|fade_message_others" value="<?php print($row['fade_message_others']); ?>" style="width:500px" />
+										<input type="hidden" name="orig_fade_message_others" value="<?= $row['fade_message_others'] ?>" />
+									</td>
+								</tr>
 							</table>
 							</fieldset>
 						</tr>
