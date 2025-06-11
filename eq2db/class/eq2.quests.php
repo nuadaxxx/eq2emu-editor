@@ -218,7 +218,7 @@ class eq2Quests
 	public function __construct() 
 	{
 		$this->quest_id = $_GET['id'] ?? NULL;
-		if( $this->quest_id > 0 )
+		if( $this->quest_id > 0 && is_numeric($this->quest_id))
 			$this->quest_name = $this->GetQuestName();
 	}
 	
