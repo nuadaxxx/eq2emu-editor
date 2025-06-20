@@ -575,7 +575,12 @@ function DisplaySOEQuestData()
 				$categories = $admin->GetSOEQuestCategories();
 				//print_r($categories);
 				foreach($categories as $category)
-					$catOptions .= sprintf('<option value="_admin.php?page=soequests&category=%s"%s>%s</option>', $category['category'], ( strlen($_GET['category']) > 0 && $_GET['category'] == $category['category'] ) ? " selected" : "", $category['category']);
+					$catOptions .= sprintf(
+						'<option value="_admin.php?page=soequests&category=%s"%s>%s</option>',
+						$category['category'],
+						(isset($_GET['category']) && $_GET['category'] === $category['category']) ? " selected" : "",
+						$category['category']
+					);
 				?>
 				<select name="category" onchange="dosub(this.options[this.selectedIndex].value)" class="combo">
 				<option value="_admin.php?page=soequests"<?php if( strlen($_GET['category'])==0 ) echo " selected" ?>>Pick a Category</option>
@@ -602,7 +607,7 @@ function DisplaySOEQuestData()
 		<?php
 		$querystring = sprintf("_admin.php?page=soequests");
 		
-		if( strlen($_GET['category']) > 0 )
+		if( isset($_GET['category']) && strlen($_GET['category']) > 0 )
 			$querystring .= sprintf("&category=%s", $_GET['category']);
 										 
 		$quest_data = $admin->GetSOEQuestData();

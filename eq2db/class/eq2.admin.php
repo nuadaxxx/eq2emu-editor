@@ -585,7 +585,7 @@ class eq2Admin
 		
 		$query = "SELECT quest_id, soe_quest_crc, name, category, tier, level FROM eq2_soedata.quest_list";
 		
-		if( strlen($_GET['category']) > 0 )
+		if( isset($_GET['category']) && strlen($_GET['category']) > 0 )
 			$query .= sprintf(" WHERE category = '%s'", $_GET['category']);
 			
 		$eq2->SQLQuery = $query . " ORDER BY level, tier, name";
