@@ -33,7 +33,7 @@ class EQ2Server
 			"Revive Points"=>"revive_points",
 			"NPC Equipment"=>"spawn_npc_equipment",
 			"Factions"=>"factions",
-			"Trasporters"=>"transporters",
+			"Transporters"=>"transporters",
 			"Flight Paths"=>"flight_paths",
 			"Merchants"=>"merchants"
 		),
