@@ -3731,6 +3731,8 @@ function transporters()
 		$strHTML .= $strOffset . "                </td>\n";
 		$strHTML .= $strOffset . "                <td>\n";
 		$strHTML .= $strOffset . "                  <select name='transporters|transport_type' style='width:125px;'>\n";
+		$strHTML .= $strOffset . "                    <option " . ($transporter_data['transport_type']=='ForceZone'?" selected":"") . ">ForceZone</option>\n";
+		$strHTML .= $strOffset . "                    <option " . ($transporter_data['transport_type']=='Flight'?" selected":"") . ">Flight</option>\n";
 		$strHTML .= $strOffset . "                    <option " . ($transporter_data['transport_type']=='Generic Transport'?" selected":"") . ">Generic Transport</option>\n";
 		$strHTML .= $strOffset . "                    <option " . ($transporter_data['transport_type']=='Location'?" selected":"") . ">Location</option>\n";
 		$strHTML .= $strOffset . "                    <option " . ($transporter_data['transport_type']=='Zone'?" selected":"") . ">Zone</option>\n";
