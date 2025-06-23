@@ -969,7 +969,7 @@ class eq2Spells
 																														 "`duration_until_cancel`, `target_type`, `success_message`, `fade_message`, `fade_message_others`, `interruptable`, `lua_script`, `spell_visual`, `effect_message`, `spell_book_type`, " . 
 																														 "`can_effect_raid`, `affect_only_group_members`, `display_spell_tier`, `friendly_spell`, `group_spell`, `linked_timer_id`, `is_aa`, `is_deity`, `deity`, `last_auto_update`) " . 
 																														 "SELECT %s, `type`, `cast_type`, `name`, `description`, `icon`, `icon_heroic_op`, `icon_backdrop`, `class_skill`, `mastery_skill`, `min_class_skill_req`, " . 
-																														 "`duration_until_cancel`, `target_type`, `success_message`, `fade_message`,, `fade_message_others`, `interruptable`, `lua_script`, `spell_visual`, `effect_message`, `spell_book_type`, " . 
+																														 "`duration_until_cancel`, `target_type`, `success_message`, `fade_message`, `fade_message_others`, `interruptable`, `lua_script`, `spell_visual`, `effect_message`, `spell_book_type`, " . 
 																														 "`can_effect_raid`, `affect_only_group_members`, `display_spell_tier`, `friendly_spell`, `group_spell`, `linked_timer_id`, `is_aa`, `is_deity`, `deity`, '%s' " . 
 																														 "FROM `".ACTIVE_DB."`.spells WHERE id = %s", $_POST['next_id'], time(), $this->spell_id);
 		$eq2->RunQuery();
