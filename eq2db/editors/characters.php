@@ -160,7 +160,7 @@ function ajaxHTML()
 function search()
 {
 	global $eq2;
-	$search_data = "";
+	$search_data = array();
 	$searchForm = (isset($_GET['form'])?$_GET['form']:"");
 	$searchType = (isset($_GET['type'])?$_GET['type']:"");
 	$searchAction = (isset($_GET['action'])?$_GET['action']:"");
@@ -209,10 +209,13 @@ function search()
 			$strHTML .= "      <td colspan='2'>\n";
 			$strHTML .= "            <select name='zoneID' onchange='dosub(this.options[this.selectedIndex].value)'>\n";
 			$strHTML .= "              <option>Make Selection</option>\n";
-			foreach($search_data as $option)
+			if(is_array($search_data))
 			{
-				$isSelected = ($option['id']==$searchID?"selected":"");
-				$strHTML .= "      <option value='characters.php?page=search&action=ListBy" . ucfirst($searchType) . "&type=" . $searchType . "&form=sel&id=" . $option['id'] . "' " . $isSelected . ">" . $option['name'] ." (" . $option['id'] . ")</option>\n";
+				foreach($search_data as $option)
+				{
+					$isSelected = ($option['id']==$searchID?"selected":"");
+					$strHTML .= "      <option value='characters.php?page=search&action=ListBy" . ucfirst($searchType) . "&type=" . $searchType . "&form=sel&id=" . $option['id'] . "' " . $isSelected . ">" . $option['name'] ." (" . $option['id'] . ")</option>\n";
+				}
 			}
 			$strHTML .= "            <select>\n";
 			$strHTML .= "      </td>\n";
@@ -223,6 +226,54 @@ function search()
 	}
 	switch($searchAction)
 	{
+		case "list":
+			if($searchType == "all")
+			{
+				$list_query = "SELECT id, name, race, class, level FROM `" . ACTIVE_DB . "`.characters ORDER BY name ASC";
+				$list_data = $eq2->RunQueryMulti($list_query);
+				if(!is_array($list_data))
+					$list_data = array();
+
+				$strHTML .= "    <tr>\n";
+				$strHTML .= "      <td>\n";
+				$strHTML .= "        <table class='ContrastTable'>\n";
+				$strHTML .= "          <tr>\n";
+				$strHTML .= "            <th>ID</th>\n";
+				$strHTML .= "            <th>Name</th>\n";
+				$strHTML .= "            <th>Race</th>\n";
+				$strHTML .= "            <th>Class</th>\n";
+				$strHTML .= "            <th>Level</th>\n";
+				$strHTML .= "            <th></th>\n";
+				$strHTML .= "          </tr>\n";
+				foreach($list_data as $list)
+				{
+					$strHTML .= "          <tr>\n";
+					$strHTML .= "            <td>\n";
+					$strHTML .= "              " . $list['id'] . "\n";
+					$strHTML .= "            </td>\n";
+					$strHTML .= "            <td>\n";
+					$strHTML .= "              " . $list['name'] . "\n";
+					$strHTML .= "            </td>\n";
+					$strHTML .= "            <td>\n";
+					$strHTML .= "              " . $list['race'] . "\n";
+					$strHTML .= "            </td>\n";
+					$strHTML .= "            <td>\n";
+					$strHTML .= "              " . $list['class'] . "\n";
+					$strHTML .= "            </td>\n";
+					$strHTML .= "            <td>\n";
+					$strHTML .= "              " . $list['level'] . "\n";
+					$strHTML .= "            </td>\n";
+					$strHTML .= "            <td>\n";
+					$strHTML .= "              <button onClick=\"location.href='characters.php?page=overview&id=" . $list['id'] . "'\">View</button>\n";
+					$strHTML .= "            </td>\n";
+					$strHTML .= "          </tr>\n";
+				}
+				$strHTML .= "        </table>\n";
+				$strHTML .= "      </td>\n";
+				$strHTML .= "    </tr>\n";
+			}
+			break;
+
 		case "ListByAcct":
 			$list_query = "SELECT id, name, race, class, level FROM `" . ACTIVE_DB . "`.characters WHERE account_id = " . $searchID;
 			$list_data = $eq2->RunQueryMulti($list_query);
