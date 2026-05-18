@@ -1152,7 +1152,7 @@ function GetServerStats()
 						<td width="50%"><strong>Records</strong></td>
 					</tr>
 					<?php
-					//$table_stats = $a->GetServerStats();
+					$table_stats = $a->GetServerStats();
 					
 					if( is_array($table_stats) )
 					{
@@ -3496,7 +3496,7 @@ function popMerchants() {
 		while($data=$eq2->db->sql_fetchrow($result)) {
 			$description = ( strlen($data['description'])>75 ) ? substr($data['description'],0,75)."..." : $data['description'];
 			if( strlen($data['name']) > 2 ) {
-				$name=preg_replace("/�/","'",$data['name']);
+				$name=preg_replace("/ /","'",$data['name']);
 				?>
 		<tr align="left">
 			<td><input type="checkbox" name="inventory|<?= $data['id'] ?>" value="1" checked /></td>
