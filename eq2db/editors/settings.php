@@ -225,7 +225,7 @@ $logs = $eq2->RunQueryMulti(sprintf(
                         </tr>
                         <tr>
                             <td class="Label">Resolved Role:</td>
-                            <td><?= settings_h($eq2->GetUserRoleName()) ?></td>
+                            <td><?= settings_h(((int)($currentUser['role'] ?? 0) === 53215) ? 'Founder' : $eq2->GetUserRoleName()) ?></td>
                         </tr>
                     </table>
                     <br />
