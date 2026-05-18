@@ -369,7 +369,7 @@ class eq2Admin
 	{
 		global $eq2;
 
-		$eq2->SQLQuery = "SELECT SUM(level) AS num FROM `".LIVE_DB."`.characters;";
+		$eq2->SQLQuery = "SELECT SUM(level) AS num FROM `".ACTIVE_DB."`.characters;";
 		$results = $eq2->RunQuerySingle();
 		
 		$ret = $results['num'] / $char_count;
@@ -435,7 +435,7 @@ class eq2Admin
 		global $eq2;
 
 		$eq2->SQLQuery =  "SELECT q.quest_id, q.lua_script, count(qc.quest_id) num_completed " .
-			"FROM `".LIVE_DB."`.quests q, `".LIVE_DB."`.character_quests qc " .
+			"FROM `".ACTIVE_DB."`.quests q, `".ACTIVE_DB."`.character_quests qc " .
 			"WHERE q.quest_id = qc.quest_id AND completed_date IS NOT NULL " .
 			"GROUP BY qc.quest_id " .
 			"ORDER BY num_completed desc LIMIT 0, 10";
@@ -448,7 +448,7 @@ class eq2Admin
 		global $eq2;
 
 		$eq2->SQLQuery = "SELECT name, class, level, tradeskill_level, count(quest_id) as quests, admin_status " . 
-			"FROM `".LIVE_DB."`.characters c, `".LIVE_DB."`.character_quests cq " . 
+			"FROM `".ACTIVE_DB."`.characters c, `".ACTIVE_DB."`.character_quests cq " . 
 			"WHERE c.id = cq.char_id AND admin_status = 0 " . 
 			"GROUP BY c.id " . 
 			"ORDER BY level desc LIMIT 0, 10";
@@ -730,7 +730,7 @@ class eq2Admin
 	{
 		global $eq2;
 
-		$eq2->SQLQuery = sprintf("SELECT id, account_id, name, class, level, tradeskill_level, current_zone_id, last_played, admin_status FROM `".LIVE_DB."`.characters ORDER BY last_played desc LIMIT 0, %s", $count);
+		$eq2->SQLQuery = sprintf("SELECT id, account_id, name, class, level, tradeskill_level, current_zone_id, last_played, admin_status FROM `".ACTIVE_DB."`.characters ORDER BY last_played desc LIMIT 0, %s", $count);
 
 		return $eq2->RunQueryMulti();
 	}
@@ -739,7 +739,7 @@ class eq2Admin
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = "SELECT COUNT(DISTINCT account_id) AS num FROM `".LIVE_DB."`.`characters`";
+		$eq2->SQLQuery = "SELECT COUNT(DISTINCT account_id) AS num FROM `".ACTIVE_DB."`.`characters`";
 		$results = $eq2->RunQuerySingle();
 		return $results['num'];
 	}
@@ -748,7 +748,7 @@ class eq2Admin
 	{
 		global $eq2;
 
-		$eq2->SQLQuery = "SELECT COUNT(id) AS num FROM `".LIVE_DB."`.characters";
+		$eq2->SQLQuery = "SELECT COUNT(id) AS num FROM `".ACTIVE_DB."`.characters";
 		$results = $eq2->RunQuerySingle();
 		return $results['num'];
 	}
