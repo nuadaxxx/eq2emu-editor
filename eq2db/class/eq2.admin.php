@@ -556,7 +556,11 @@ class eq2Admin
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = "SELECT DISTINCT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = `".ACTIVE_DB."` AND TABLE_ROWS > 0";
+		$db_name = $eq2->SQLEscape(ACTIVE_DB);
+		$eq2->SQLQuery = sprintf(
+			"SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = '%s' AND TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME;",
+			$db_name
+		);
 		$tables = $eq2->RunQueryMulti();
 		
 		if( is_array($tables) )
@@ -564,7 +568,8 @@ class eq2Admin
 			$server_stats = array();
 			foreach($tables as $table)
 			{
-				$server_stats[$table['TABLE_NAME']] .= $this->GetTotalRows(ACTIVE_DB, $table['TABLE_NAME']);
+				$table_name = $table['TABLE_NAME'];
+				$server_stats[$table_name] = $this->GetTotalRows(ACTIVE_DB, $table_name);
 			}
 			
 			return $server_stats;
@@ -770,7 +775,9 @@ class eq2Admin
 	{
 		global $eq2;
 
-		$eq2->SQLQuery = sprintf("SELECT count(*) AS num FROM %s.%s;", $database, $table);
+		$database = str_replace('`', '``', $database);
+		$table = str_replace('`', '``', $table);
+		$eq2->SQLQuery = sprintf("SELECT COUNT(*) AS num FROM `%s`.`%s`;", $database, $table);
 		$data = $eq2->RunQuerySingle();
 		return ( !empty($data) ) ? $data['num'] : 0;
 	}
