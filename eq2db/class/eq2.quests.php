@@ -2,6 +2,8 @@
 
 class eq2Quests
 {
+	var $quest_editor_base_page = 'quests.php';
+
 	var $eq2QuestTables = array("quests", "quest_details");
 	var $eq2QuestTypes = array('None','Prereq','Reward');
 	var $eq2QuestSubtypes = array('None','Experience','Faction','Item','Quest','Race','Class','AdvLevel','TSLevel','Coin','Selectable','MaxCoin','MaxAdvLevel','MaxTSLevel',
@@ -276,6 +278,13 @@ class eq2Quests
 		return $eq2->RunQueryMulti();
 	}
 	
+	public function SetQuestEditorBasePage($page)
+	{
+		$page = trim((string)$page);
+		if( $page !== '' )
+			$this->quest_editor_base_page = $page;
+	}
+
 	public function GetQuestName()
 	{
 		global $eq2;
@@ -296,7 +305,7 @@ class eq2Quests
 		{
 			$ret = "";
 			foreach($results as $data)
-				$ret .= sprintf('<option value="quests.php?zone=%s"%s>%s</option>', $data['zone'], ( isset($_GET['zone']) && $_GET['zone'] == $data['zone'] ) ? " selected" : "", $data['zone']);
+				$ret .= sprintf('<option value="%s?zone=%s"%s>%s</option>', $this->quest_editor_base_page, $data['zone'], ( isset($_GET['zone']) && $_GET['zone'] == $data['zone'] ) ? " selected" : "", $data['zone']);
 		} 
 		
 		return $ret;
@@ -315,7 +324,7 @@ class eq2Quests
 		if( is_array($results) )
 		{
 			foreach($results as $data)
-				$ret .= sprintf('<option value="quests.php?zone=%s&id=%s&tab=register"%s>%s (%d)</option>', $quest_zone, $data['quest_id'], ( isset($_GET['id']) && $_GET['id'] == $data['quest_id'] ) ? " selected" : "", $data['name'], $data['quest_id']);
+				$ret .= sprintf('<option value="%s?zone=%s&id=%s&tab=register"%s>%s (%d)</option>', $this->quest_editor_base_page, $quest_zone, $data['quest_id'], ( isset($_GET['id']) && $_GET['id'] == $data['quest_id'] ) ? " selected" : "", $data['name'], $data['quest_id']);
 		} 
 		
 		return $ret;
