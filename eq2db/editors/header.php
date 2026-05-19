@@ -175,6 +175,13 @@ if( $GLOBALS['config']['debug_forms'] && isset($_POST['cmd']) )
                         $strHTML .= "  <a href=" . $info[1] . ">" . $info[0] . "</a>\n";
                         $strHTML .= "</td>\n";
                         print($strHTML);
+
+                        // Quest-AI is a separate cloned workspace for AI-assisted quest work.
+                        // The original Quests tab/page remains untouched.
+                        if ($info[0] == "Quests") {
+                            $questAiClass = ($current_script == "quest_ai.php") ? "tabOn" : "tabOff";
+                            print('<td class="' . $questAiClass . '"><a href="quest_ai.php">Quest-AI</a></td>');
+                        }
                     }
                     else $empty_cell++;
                 }
@@ -236,3 +243,4 @@ if( $GLOBALS['config']['debug_forms'] && isset($_POST['cmd']) )
     /* if logged in, continue with main body */
     ?>
     <div id="main-body">
+
