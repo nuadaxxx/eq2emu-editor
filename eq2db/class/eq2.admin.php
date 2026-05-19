@@ -3889,6 +3889,131 @@ class eq2Admin
 		return $model;
 	}
 	
+	private function QuestFixSOEQuestSummary($quest)
+	{
+		$quest = is_array($quest) ? $quest : array();
+		return array(
+			'id' => isset($quest['quest_id']) ? (string)$quest['quest_id'] : (isset($quest['id']) ? (string)$quest['id'] : ''),
+			'crc' => isset($quest['soe_quest_crc']) ? (string)$quest['soe_quest_crc'] : '',
+			'name' => isset($quest['name']) ? (string)$quest['name'] : '',
+			'category' => isset($quest['category']) ? (string)$quest['category'] : '',
+			'level' => isset($quest['level']) ? (string)$quest['level'] : '',
+			'tier' => isset($quest['tier']) ? (string)$quest['tier'] : '',
+			'repeatable' => isset($quest['repeatable']) ? (string)$quest['repeatable'] : '',
+			'source' => 'soe_reference_tables',
+			'json' => json_encode($quest, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+		);
+	}
+
+	public function QuestFixBuildQuestModelFromSOEQuestId($questId)
+	{
+		$questId = (int)$questId;
+		if( $questId <= 0 )
+			return array('ok' => false, 'error' => 'No SOE quest id was supplied.');
+		if( !$this->HasSOEQuestSchema() )
+			return array('ok' => false, 'error' => 'SOE quest reference tables are not installed.');
+
+		$quest = $this->GetSOEQuest($questId);
+		if( !is_array($quest) || count($quest) === 0 )
+			return array('ok' => false, 'error' => 'SOE quest reference row was not found for id ' . $questId . '.');
+
+		$summary = $this->QuestFixSOEQuestSummary($quest);
+		$localQuest = $this->QuestFixFindLocalQuestByName($summary['name'] ?? '');
+		$wikiData = $this->QuestFixWikiQuestData($summary['name'] ?? '');
+		$localLuaComplexity = $this->QuestFixLocalLuaComplexity((string)($localQuest['lua_script'] ?? ''));
+		$model = array(
+			'ok' => true,
+			'source' => 'soe_reference_tables',
+			'summary' => $summary,
+			'local_quest' => $localQuest,
+			'local_lua_complexity' => $localLuaComplexity,
+			'wiki' => $wikiData,
+			'quest_starter_texts' => array(),
+			'quest_completion_texts' => array(),
+			'stages' => array(),
+			'branches' => array(),
+			'warnings' => array()
+		);
+
+		$stages = $this->GetSOEQuestStages($questId);
+		if( !is_array($stages) || count($stages) === 0 )
+		{
+			$model['warnings'][] = 'The SOE quest reference tables contain no stage rows for this quest.';
+			return $model;
+		}
+
+		$stepNumber = 1;
+		foreach($stages as $stageRow)
+		{
+			if( !is_array($stageRow) )
+				continue;
+			$stageNum = isset($stageRow['stage_num']) ? (int)$stageRow['stage_num'] : $stepNumber;
+			$description = isset($stageRow['description']) ? $this->QuestFixNormalizeWhitespace((string)$stageRow['description']) : '';
+			$completedText = isset($stageRow['completed_text']) ? $this->QuestFixNormalizeWhitespace((string)$stageRow['completed_text']) : '';
+			$completedZone = isset($stageRow['completed_zone']) ? $this->QuestFixNormalizeWhitespace((string)$stageRow['completed_zone']) : '';
+			$completedZoneOverride = isset($stageRow['completed_zone_override']) ? $this->QuestFixNormalizeWhitespace((string)$stageRow['completed_zone_override']) : '';
+			$stepText = $description !== '' ? $description : ($completedText !== '' ? $completedText : '');
+			$completionText = $completedText !== '' ? $completedText : $stepText;
+			$taskGroupText = $stepText;
+			$analysis = $this->QuestFixAnalyzeText($stepText);
+			$localTypeEvidence = $this->QuestFixLocalStepTypeEvidence((string)($localQuest['lua_script'] ?? ''), $stepNumber);
+			if( !empty($localTypeEvidence['found']) && in_array((string)($localTypeEvidence['type'] ?? ''), array('Kill', 'Chat', 'Location'), true) )
+			{
+				$analysis['step_type'] = (string)$localTypeEvidence['type'];
+				$analysis['auto_type'] = (string)$localTypeEvidence['type'];
+				$analysis['confidence'] = 100;
+				$analysis['notes'][] = 'Local Lua step function confirms type ' . (string)$localTypeEvidence['type'] . '.';
+			}
+
+			$quotaMin = isset($stageRow['quota_min']) ? max(1, (int)$stageRow['quota_min']) : 1;
+			$quotaMax = isset($stageRow['quota_max']) ? max(1, (int)$stageRow['quota_max']) : $quotaMin;
+			$iconId = isset($stageRow['icon_id']) ? (int)$stageRow['icon_id'] : 0;
+			if( (int)($analysis['count'] ?? 1) <= 1 )
+			{
+				if( $quotaMin <= 1 && $quotaMax > 1 )
+					$analysis['count'] = $quotaMax;
+				elseif( $quotaMin > 1 && $quotaMax === $quotaMin )
+					$analysis['count'] = $quotaMin;
+			}
+
+			$branch = array(
+				'step_number' => $stepNumber++,
+				'stage_num' => $stageNum,
+				'description' => $description,
+				'step_text' => $stepText,
+				'task_group_text' => $taskGroupText,
+				'completion_text' => $completionText,
+				'completed_zone' => $completedZone,
+				'completed_zone_override' => $completedZoneOverride,
+				'starter_texts' => array(),
+				'completion_texts' => $completionText !== '' ? array($completionText) : array(),
+				'analysis' => $analysis,
+				'context_zone' => (string)($summary['category'] ?? ''),
+				'wiki_data' => $wikiData,
+				'local_quest_id' => (int)($localQuest['id'] ?? 0),
+				'local_quest_lua_script' => (string)($localQuest['lua_script'] ?? ''),
+				'quota_min' => $quotaMin,
+				'quota_max' => $quotaMax,
+				'icon_id' => $iconId,
+				'candidates' => array(),
+				'best_spawn_id' => 0,
+				'best_spawn_ids' => array(),
+				'local_step_evidence' => array(),
+				'best_location' => array()
+			);
+			$branch = $this->QuestFixResolveBranchMatches($branch);
+			$stage = array(
+				'num' => $stageNum,
+				'starter_texts' => array(),
+				'completion_texts' => $completionText !== '' ? array($completionText) : array(),
+				'branches' => array($branch)
+			);
+			$model['stages'][] = $stage;
+			$model['branches'][] = $branch;
+		}
+		return $model;
+	}
+
 	private function QuestFixLuaSlug($text)
 	{
 		$text = strtolower($this->QuestFixNormalizeWhitespace($text));
@@ -4953,4 +5078,3 @@ class eq2Admin
 	}
 }
 ?>
-
