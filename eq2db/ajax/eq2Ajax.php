@@ -85,6 +85,11 @@ if( strlen(($_GET['search'] ?? "")) && isset($_GET['type']) )
 			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM `".ACTIVE_DB."`.spawn WHERE name RLIKE '".$search."' ORDER BY name LIMIT 0,10";
 			$dataset = getData();
 			break;
+
+		case "questFixSpawn":
+			$eq2->SQLQuery = "SELECT CONCAT(name, ' (', id, ')') as search_text FROM `".ACTIVE_DB."`.spawn WHERE name RLIKE '".$search."' OR id = '".$search."' ORDER BY LENGTH(name), name, id LIMIT 0,40";
+			$dataset = getData();
+			break;
 			
 		case "luO":
 			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM `".ACTIVE_DB."`.opcodes WHERE (name RLIKE '".$search."') OR (opcode RLIKE '".$search."') ORDER BY name LIMIT 0,10";
