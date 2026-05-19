@@ -565,12 +565,11 @@ function DisplaySOEQuestData()
 {
 	global $eq2, $admin;
 	
-	ShowSOEQuestFixAssistant();
-	
 	$hasSoeSchema = $admin->HasSOEQuestSchema();
 	if( !$hasSoeSchema )
 	{
 		?>
+		<?php ShowSOEQuestFixAssistant(0); ?>
 		<br />
 		<fieldset>
 			<legend>SOE / DBG Quest Reference Database</legend>
@@ -578,7 +577,7 @@ function DisplaySOEQuestData()
 				<tr>
 					<td class="Detail">
 						The legacy SOE quest browser cannot load because the configured SOE quest reference tables are not installed in <strong><?= htmlspecialchars(SOE_DATA, ENT_QUOTES, 'UTF-8') ?></strong>.
-						The <strong>Quest Fix Assistant</strong> above works directly against Census, the active EQ2Emu MySQL world database, and available server SpawnScripts. It auto-detects step types, allows manual type overrides, auto-matches Kill/Chat targets to spawn IDs, boosts matches when existing SpawnScripts confirm exact quest steps, and emits Location steps when a strong world-data location candidate is found.
+						The integrated <strong>Quest Fix Assistant</strong> normally reuses the existing SOE quest reference browser, stage rows, active world database, and SpawnScripts. Because the reference tables are missing here, the standalone Census fallback appears above.
 					</td>
 				</tr>
 			</table>
@@ -666,6 +665,7 @@ function DisplaySOEQuestData()
 			'quests'	=> 'Quest',
 			'stages'	=> 'Stages',
 			'rewards'	=> 'Rewards',
+			'assistant'	=> 'Quest Fix Assistant',
 			'fixer'		=> 'Quest Fixer'
 		);
 		
@@ -676,6 +676,7 @@ function DisplaySOEQuestData()
 			case "quests" : ShowSOEQuestDetails(); break;
 			case "stages" : ShowSOEQuestStages(); break;
 			case "rewards": ShowSOEQuestRewards(); break;
+			case "assistant" : ShowSOEQuestFixAssistant($idValue); break;
 			case "fixer" : ShowSOEQuestFixer(); break;
 		}
 	} 
@@ -684,9 +685,12 @@ function DisplaySOEQuestData()
 	<?php	
 }
 
-function ShowSOEQuestFixAssistant()
+function ShowSOEQuestFixAssistant($soeQuestId = 0)
 {
 	global $admin;
+	$soeQuestId = (int)$soeQuestId;
+	$isIntegratedSOE = $soeQuestId > 0;
+	$formAction = $isIntegratedSOE ? ('_admin.php?page=soequests&id=' . $soeQuestId . '&tab=assistant') : '_admin.php?page=soequests';
 	$stepTypes = $admin->QuestFixStepTypes();
 	$questName = $_POST['quest_fix_census_name'] ?? 'Hunting the Huntresses';
 	$questOption = $_POST['quest_fix_census_option'] ?? '';
@@ -697,7 +701,35 @@ function ShowSOEQuestFixAssistant()
 	$typeOverrides = isset($_POST['quest_fix_step_type']) && is_array($_POST['quest_fix_step_type']) ? $_POST['quest_fix_step_type'] : array();
 	$locationOverrides = isset($_POST['quest_fix_location_candidate']) && is_array($_POST['quest_fix_location_candidate']) ? $_POST['quest_fix_location_candidate'] : array();
 	$spawnCandidateOverrides = isset($_POST['quest_fix_spawn_candidate']) && is_array($_POST['quest_fix_spawn_candidate']) ? $_POST['quest_fix_spawn_candidate'] : array();
-	if( isset($_POST['quest_fix_census_parse']) )
+	if( isset($_POST['quest_fix_spawn_candidate_text']) && is_array($_POST['quest_fix_spawn_candidate_text']) )
+	{
+		foreach($_POST['quest_fix_spawn_candidate_text'] as $stepNo => $rawSpawnIds)
+		{
+			$ids = array();
+			if( preg_match_all('/\b(\d+)\b/', (string)$rawSpawnIds, $mm) )
+			{
+				foreach($mm[1] as $idText)
+				{
+					$id = (int)$idText;
+					if( $id > 0 && !in_array($id, $ids, true) )
+						$ids[] = $id;
+				}
+			}
+			if( count($ids) > 0 )
+				$spawnCandidateOverrides[(int)$stepNo] = $ids;
+		}
+	}
+	if( $isIntegratedSOE )
+	{
+		$model = $admin->QuestFixBuildQuestModelFromSOEQuestId($soeQuestId);
+		if( is_array($model) && !empty($model['ok']) )
+		{
+			if( (is_array($typeOverrides) && count($typeOverrides) > 0) || (is_array($locationOverrides) && count($locationOverrides) > 0) || (is_array($spawnCandidateOverrides) && count($spawnCandidateOverrides) > 0) )
+				$model = $admin->QuestFixApplyTypeOverrides($model, $typeOverrides, $locationOverrides, $spawnCandidateOverrides);
+			$lua = $admin->QuestFixBuildLuaFromCensusModel($model);
+		}
+	}
+	elseif( isset($_POST['quest_fix_census_parse']) )
 	{
 		$census = $admin->QuestFixCensusSearchByName($questName, $questOption);
 		if( !empty($census['ok']) && isset($census['quests']) && count($census['quests']) === 1 )
@@ -719,13 +751,13 @@ function ShowSOEQuestFixAssistant()
 		else
 			$census = array('ok' => false, 'error' => 'The selected Census JSON payload could not be decoded for Lua update.');
 	}
-	if( $selectedQuestJson !== '' )
+	if( !$isIntegratedSOE && $selectedQuestJson !== '' )
 	{
 		$decoded = $admin->QuestFixCensusDecodeQuestJson($selectedQuestJson);
 		if( !empty($decoded['ok']) )
 		{
 			$model = $admin->QuestFixCensusBuildQuestModel($decoded['quest_data']);
-			if( (is_array($typeOverrides) && count($typeOverrides) > 0) || (is_array($locationOverrides) && count($locationOverrides) > 0) )
+			if( (is_array($typeOverrides) && count($typeOverrides) > 0) || (is_array($locationOverrides) && count($locationOverrides) > 0) || (is_array($spawnCandidateOverrides) && count($spawnCandidateOverrides) > 0) )
 				$model = $admin->QuestFixApplyTypeOverrides($model, $typeOverrides, $locationOverrides, $spawnCandidateOverrides);
 			$lua = $admin->QuestFixBuildLuaFromCensusModel($model);
 		}
@@ -733,13 +765,80 @@ function ShowSOEQuestFixAssistant()
 			$census = $decoded;
 	}
 	?>
+	<script>
+	function QuestFixLocalQuestLookupAJAX() {
+		var input = document.getElementById('quest_fix_census_name');
+		var suggest = document.getElementById('quest_fix_census_suggest');
+		if (!input || !suggest) return;
+		if (input.value.length < 1) {
+			suggest.innerHTML = '';
+			return;
+		}
+		if (searchReq.readyState == 4 || searchReq.readyState == 0) {
+			var str = escape(input.value);
+			txtSearchAjaxInput = 'quest_fix_census_name';
+			searchSuggestDiv = 'quest_fix_census_suggest';
+			ajaxSelectCallback = null;
+			// Reuse the exact same active-world quest lookup used by the existing Quests editor.
+			searchReq.open('GET', '../ajax/eq2Ajax.php?type=luQ&search=' + str, true);
+			searchReq.onreadystatechange = handleSearchSuggest;
+			searchReq.send(null);
+		}
+	}
+	function QuestFixSpawnLookupAJAX(stepNo) {
+		var input = document.getElementById('quest_fix_spawn_lookup_' + stepNo);
+		if (!input || input.value.length < 1) return;
+		if (searchReq.readyState == 4 || searchReq.readyState == 0) {
+			var str = escape(input.value);
+			txtSearchAjaxInput = 'quest_fix_spawn_lookup_' + stepNo;
+			searchSuggestDiv = 'quest_fix_spawn_suggest_' + stepNo;
+			ajaxSelectCallback = function() { QuestFixAddSpawnOverride(stepNo); };
+			searchReq.open('GET', '../ajax/eq2Ajax.php?type=questFixSpawn&search=' + str, true);
+			searchReq.onreadystatechange = handleSearchSuggest;
+			searchReq.send(null);
+		}
+	}
+	function QuestFixAddSpawnOverride(stepNo) {
+		var lookup = document.getElementById('quest_fix_spawn_lookup_' + stepNo);
+		var hidden = document.getElementById('quest_fix_spawn_ids_' + stepNo);
+		var label = document.getElementById('quest_fix_spawn_manual_' + stepNo);
+		if (!lookup || !hidden || !label) return;
+		var match = lookup.value.match(/\((\d+)\)\s*$/);
+		if (!match) return;
+		var id = match[1];
+		var ids = hidden.value ? hidden.value.split(/\s*,\s*/) : [];
+		if (ids.indexOf(id) === -1) ids.push(id);
+		hidden.value = ids.join(', ');
+		label.innerHTML = '<strong>Manual ID override:</strong> ' + hidden.value;
+		lookup.value = '';
+		ajaxSelectCallback = null;
+	}
+	function QuestFixClearSpawnOverride(stepNo) {
+		var hidden = document.getElementById('quest_fix_spawn_ids_' + stepNo);
+		var label = document.getElementById('quest_fix_spawn_manual_' + stepNo);
+		var suggest = document.getElementById('quest_fix_spawn_suggest_' + stepNo);
+		if (hidden) hidden.value = '';
+		if (label) label.innerHTML = '<strong>Manual ID override:</strong> none / auto ranking active';
+		if (suggest) suggest.innerHTML = '';
+	}
+	</script>
 	<fieldset>
-		<legend>Quest Fix Assistant - Test Build 5: Census + Auto Types + Manual Override + SpawnScript Evidence + Safe Location Candidate Selection</legend>
-		<form method="post" action="_admin.php?page=soequests">
+		<legend>Quest Fix Assistant - BUILD6 FIX23: existing quest-name ghosting + SOE-stage integrated + DB/Wiki Lua preview</legend>
+		<?php if( $isIntegratedSOE ) { ?>
+		<table width="100%" cellpadding="4" cellspacing="0" border="0">
+			<tr><td class="Label" width="180">Data Source:</td><td class="Detail">Existing SOE quest reference tables, existing stage rows, active world DB, Wiki Assist, and SpawnScripts.</td></tr>
+			<tr><td class="Label">SOE Quest ID:</td><td class="Detail"><?= (int)$soeQuestId ?></td></tr>
+		</table>
+		<?php } else { ?>
+		<form method="post" action="<?= htmlspecialchars($formAction, ENT_QUOTES, 'UTF-8') ?>">
 			<table width="100%" cellpadding="4" cellspacing="0" border="0">
 				<tr>
 					<td class="Label" width="180">Census Quest Name:</td>
-					<td class="Detail"><input type="text" name="quest_fix_census_name" value="<?= htmlspecialchars($questName, ENT_QUOTES, 'UTF-8') ?>" style="width:520px;" /></td>
+					<td class="Detail">
+						<input type="text" id="quest_fix_census_name" name="quest_fix_census_name" value="<?= htmlspecialchars($questName, ENT_QUOTES, 'UTF-8') ?>" onkeyup="QuestFixLocalQuestLookupAJAX();" autocomplete="off" style="width:520px;" />
+						<div id="quest_fix_census_suggest"></div>
+						<span style="font-size:11px;">Ghosted matches reuse the existing active-world <em>Quests</em> lookup. Clicking one only fills the name; press “Census suchen + parsen” to load its Census data.</span>
+					</td>
 				</tr>
 				<tr>
 					<td class="Label">Optional Census Filter:</td>
@@ -751,6 +850,7 @@ function ShowSOEQuestFixAssistant()
 				</tr>
 			</table>
 		</form>
+		<?php } ?>
 		<?php if( is_array($census) && empty($census['ok']) ) { ?>
 		<hr />
 		<table width="100%" cellpadding="4" cellspacing="0" border="0">
@@ -777,7 +877,7 @@ function ShowSOEQuestFixAssistant()
 				<td><?= htmlspecialchars($questRow['level'], ENT_QUOTES, 'UTF-8') ?></td>
 				<td><?= htmlspecialchars($questRow['tier'], ENT_QUOTES, 'UTF-8') ?></td>
 				<td>
-					<form method="post" action="_admin.php?page=soequests" style="display:inline;">
+					<form method="post" action="<?= htmlspecialchars($formAction, ENT_QUOTES, 'UTF-8') ?>" style="display:inline;">
 						<input type="hidden" name="quest_fix_census_name" value="<?= htmlspecialchars($questName, ENT_QUOTES, 'UTF-8') ?>" />
 						<input type="hidden" name="quest_fix_census_option" value="<?= htmlspecialchars($questOption, ENT_QUOTES, 'UTF-8') ?>" />
 						<input type="hidden" name="quest_fix_census_json" value="<?= htmlspecialchars(base64_encode($questRow['json']), ENT_QUOTES, 'UTF-8') ?>" />
@@ -791,22 +891,27 @@ function ShowSOEQuestFixAssistant()
 		<?php if( is_array($model) && !empty($model['ok']) ) { ?>
 		<hr />
 		<table width="100%" cellpadding="4" cellspacing="0" border="0">
-			<tr bgcolor="#cccccc"><td colspan="2"><strong>Selected Census Quest</strong></td></tr>
+			<tr bgcolor="#cccccc"><td colspan="2"><strong>Selected Quest</strong></td></tr>
 			<tr><td class="Label" width="180">Name:</td><td class="Detail"><?= htmlspecialchars($model['summary']['name'], ENT_QUOTES, 'UTF-8') ?></td></tr>
 			<tr><td class="Label">ID / CRC:</td><td class="Detail"><?= htmlspecialchars($model['summary']['id'], ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars($model['summary']['crc'], ENT_QUOTES, 'UTF-8') ?></td></tr>
 			<tr><td class="Label">Category / Level / Tier:</td><td class="Detail"><?= htmlspecialchars($model['summary']['category'], ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars($model['summary']['level'], ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars($model['summary']['tier'], ENT_QUOTES, 'UTF-8') ?></td></tr>
 			<tr><td class="Label">Quest Branches:</td><td class="Detail"><?= (int)count($model['branches']) ?></td></tr>
+			<tr><td class="Label">Assistant Source:</td><td class="Detail"><?= !empty($model['source']) && $model['source'] === 'soe_reference_tables' ? 'SOE reference tables + existing quest browser structures' : 'Direct Census fallback' ?></td></tr>
 			<tr><td class="Label">Local EQ2Emu Quest:</td><td class="Detail"><?php if(!empty($model['local_quest'])) { ?>ID <?= (int)$model['local_quest']['id'] ?> — <?= htmlspecialchars($model['local_quest']['name'], ENT_QUOTES, 'UTF-8') ?><?php } else { ?>Not found by exact name in active world DB<?php } ?></td></tr>
 			<tr><td class="Label">EQ2 Wiki Assist:</td><td class="Detail"><?php if(!empty($model['wiki']['ok'])) { ?>Loaded<?= !empty($model['wiki']['source']) ? ' [' . htmlspecialchars($model['wiki']['source'], ENT_QUOTES, 'UTF-8') . ']' : '' ?> — <?= (int)count($model['wiki']['coordinates'] ?? array()) ?> waypoint coordinate(s) parsed<?php } else { ?>Not available<?php if(!empty($model['wiki']['error'])) { ?> — <?= htmlspecialchars($model['wiki']['error'], ENT_QUOTES, 'UTF-8') ?><?php } ?><?php } ?></td></tr>
 		</table>
 		<br />
-		<form method="post" action="_admin.php?page=soequests">
+		<form method="post" action="<?= htmlspecialchars($formAction, ENT_QUOTES, 'UTF-8') ?>">
 			<input type="hidden" name="quest_fix_census_name" value="<?= htmlspecialchars($questName, ENT_QUOTES, 'UTF-8') ?>" />
 			<input type="hidden" name="quest_fix_census_option" value="<?= htmlspecialchars($questOption, ENT_QUOTES, 'UTF-8') ?>" />
+			<?php if( $isIntegratedSOE ) { ?>
+			<input type="hidden" name="quest_fix_soe_id" value="<?= (int)$soeQuestId ?>" />
+			<?php } else { ?>
 			<input type="hidden" name="quest_fix_selected_json" value="<?= htmlspecialchars(base64_encode($selectedQuestJson), ENT_QUOTES, 'UTF-8') ?>" />
+			<?php } ?>
 			<table width="100%" cellpadding="4" cellspacing="0" border="0">
 				<tr bgcolor="#cccccc"><td colspan="13"><strong>Auto Parsed Quest Steps — Type can be changed, then press “Update Lua Preview”</strong></td></tr>
-				<tr bgcolor="#dddddd"><td><strong>Step</strong></td><td><strong>Census Text</strong></td><td><strong>Auto Type</strong></td><td><strong>Selected Type</strong></td><td><strong>Count</strong></td><td><strong>Target</strong></td><td><strong>Zone</strong></td><td><strong>Best ID</strong></td><td><strong>Best Match</strong></td><td><strong>Score</strong></td><td><strong>Script Evidence</strong></td><td><strong>Candidate / Location Override</strong></td><td><strong>Override?</strong></td></tr>
+				<tr bgcolor="#dddddd"><td><strong>Step</strong></td><td><strong>Reference Text</strong></td><td><strong>Auto Type</strong></td><td><strong>Selected Type</strong></td><td><strong>Count</strong></td><td><strong>Target</strong></td><td><strong>Zone</strong></td><td><strong>Best ID</strong></td><td><strong>Best Match</strong></td><td><strong>Score</strong></td><td><strong>Script Evidence</strong></td><td><strong>Candidate / Location Override</strong></td><td><strong>Override?</strong></td></tr>
 				<?php foreach($model['branches'] as $branch) { $best = count($branch['candidates']) > 0 ? $branch['candidates'][0] : null; $selectedType = $branch['analysis']['step_type']; $autoType = $branch['analysis']['auto_type'] ?? $selectedType; $bestId = $selectedType === 'Location' ? 0 : (int)$branch['best_spawn_id']; $scriptEvidence = $best !== null && !empty($best['script_evidence']) ? $best['script_evidence'] : array(); $locationText = $selectedType === 'Location' && !empty($branch['best_location']) ? (($branch['best_location']['source_zone_name'] ?? '') . ' @ ' . ($branch['best_location']['x'] ?? 0) . ', ' . ($branch['best_location']['y'] ?? 0) . ', ' . ($branch['best_location']['z'] ?? 0)) : 'Unresolved'; $selectedLocationCandidateId = (int)($branch['best_location']['id'] ?? 0); $selectedSpawnCandidateIds = isset($branch['selected_spawn_candidate_ids']) && is_array($branch['selected_spawn_candidate_ids']) ? array_values(array_unique(array_map('intval', $branch['selected_spawn_candidate_ids']))) : array(); ?>
 				<tr<?= $best !== null ? ' bgcolor="#d8f0d8"' : '' ?>>
 					<td><?= (int)$branch['step_number'] ?></td>
@@ -835,15 +940,19 @@ function ShowSOEQuestFixAssistant()
 									<option value="<?= $candidateId ?>"<?= $selectedLocationCandidateId === $candidateId ? ' selected="selected"' : '' ?>><?= htmlspecialchars($candidateLabel, ENT_QUOTES, 'UTF-8') ?></option>
 								<?php } ?>
 							</select>
-						<?php } elseif( $selectedType === 'Kill' || $selectedType === 'Chat' ) { $resolvedSpawnIds = !empty($branch['best_spawn_ids']) ? implode(', ', array_map('intval', $branch['best_spawn_ids'])) : ((int)($branch['best_spawn_id'] ?? 0) > 0 ? (string)(int)$branch['best_spawn_id'] : 'unresolved'); ?>
+						<?php } elseif( $selectedType === 'Kill' || $selectedType === 'Chat' ) { $resolvedSpawnIds = !empty($branch['best_spawn_ids']) ? implode(', ', array_map('intval', $branch['best_spawn_ids'])) : ((int)($branch['best_spawn_id'] ?? 0) > 0 ? (string)(int)$branch['best_spawn_id'] : 'unresolved'); $manualSpawnText = count($selectedSpawnCandidateIds) > 0 ? implode(', ', $selectedSpawnCandidateIds) : ''; $stepNo = (int)$branch['step_number']; ?>
 							<div><strong>Resolved spawn ID(s): <?= htmlspecialchars($resolvedSpawnIds, ENT_QUOTES, 'UTF-8') ?></strong><?= !empty($branch['spawn_candidate_manual_selected']) ? ' <em>(manual)</em>' : ' <em>(auto)</em>' ?></div>
-							<select name="quest_fix_spawn_candidate[<?= (int)$branch['step_number'] ?>][]" multiple="multiple" size="8" style="width:620px; max-width:100%; margin-top:4px;">
-								<option value="0"<?= count($selectedSpawnCandidateIds) === 0 ? ' selected="selected"' : '' ?>>auto / use ranked candidates</option>
-								<?php foreach(array_slice($branch['candidates'], 0, 40) as $spawnCandidate) { $candidateId = (int)($spawnCandidate['id'] ?? 0); $candidateZone = trim((string)($spawnCandidate['zone_description'] ?? ($spawnCandidate['zone_name'] ?? ''))); $candidateAttackable = isset($spawnCandidate['attackable']) ? ((int)$spawnCandidate['attackable'] === 1 ? 'attackable' : 'non-attackable') : ''; $candidateLabel = '#' . $candidateId . ' | ' . ($spawnCandidate['name'] ?? 'Spawn') . ($candidateZone !== '' ? ' | ' . $candidateZone : '') . ($candidateAttackable !== '' ? ' | ' . $candidateAttackable : '') . ' | score ' . (int)($spawnCandidate['score'] ?? 0); ?>
-									<option value="<?= $candidateId ?>"<?= in_array($candidateId, $selectedSpawnCandidateIds, true) ? ' selected="selected"' : '' ?>><?= htmlspecialchars($candidateLabel, ENT_QUOTES, 'UTF-8') ?></option>
-								<?php } ?>
-							</select>
-							<div style="font-size:11px; margin-top:2px;">Kill/Chat: choose one or several spawn IDs with Ctrl/Cmd for a manual Lua override, or leave “auto” selected.</div>
+							<input type="hidden" id="quest_fix_spawn_ids_<?= $stepNo ?>" name="quest_fix_spawn_candidate_text[<?= $stepNo ?>]" value="<?= htmlspecialchars($manualSpawnText, ENT_QUOTES, 'UTF-8') ?>" />
+							<div id="quest_fix_spawn_manual_<?= $stepNo ?>" style="font-size:11px; margin-top:2px;"><strong>Manual ID override:</strong> <?= $manualSpawnText !== '' ? htmlspecialchars($manualSpawnText, ENT_QUOTES, 'UTF-8') : 'none / auto ranking active' ?></div>
+							<div style="margin-top:4px;">
+								<input type="text" id="quest_fix_spawn_lookup_<?= $stepNo ?>" autocomplete="off" class="box" style="width:420px;" placeholder="Search spawn name or ID; click a ghosted result to add it" onkeyup="QuestFixSpawnLookupAJAX(<?= $stepNo ?>);" />
+								<input type="button" value="Clear manual IDs" onclick="QuestFixClearSpawnOverride(<?= $stepNo ?>);" />
+								<div id="quest_fix_spawn_suggest_<?= $stepNo ?>"></div>
+							</div>
+							<div style="font-size:11px; margin-top:2px;">Uses the existing editor ghosting style and the active spawn DB. Multiple clicked results are stored as comma-separated manual IDs for Lua preview.</div>
+							<?php if( count($branch['candidates']) > 0 ) { ?>
+							<div style="font-size:11px; margin-top:4px;"><strong>Top ranked auto candidates:</strong> <?php $preview = array(); foreach(array_slice($branch['candidates'], 0, 5) as $spawnCandidate) { $preview[] = '#' . (int)($spawnCandidate['id'] ?? 0) . ' ' . ($spawnCandidate['name'] ?? 'Spawn'); } echo htmlspecialchars(implode(' | ', $preview), ENT_QUOTES, 'UTF-8'); ?></div>
+							<?php } ?>
 						<?php } else { ?>
 							—
 						<?php } ?>
@@ -4776,4 +4885,3 @@ function editor_news()
 }
 
 ?>
-
