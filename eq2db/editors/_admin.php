@@ -565,6 +565,30 @@ function DisplaySOEQuestData()
 {
 	global $eq2, $admin;
 	
+	ShowSOEQuestFixAssistant();
+	
+	$hasSoeSchema = $admin->HasSOEQuestSchema();
+	if( !$hasSoeSchema )
+	{
+		?>
+		<br />
+		<fieldset>
+			<legend>SOE / DBG Quest Reference Database</legend>
+			<table width="100%" cellpadding="4" cellspacing="0" border="0">
+				<tr>
+					<td class="Detail">
+						The legacy SOE quest browser cannot load because the configured SOE quest reference tables are not installed in <strong><?= htmlspecialchars(SOE_DATA, ENT_QUOTES, 'UTF-8') ?></strong>.
+						The <strong>Quest Fix Assistant</strong> above works directly against Census, the active EQ2Emu MySQL world database, and available server SpawnScripts. It auto-detects step types, allows manual type overrides, auto-matches Kill/Chat targets to spawn IDs, boosts matches when existing SpawnScripts confirm exact quest steps, and emits Location steps when a strong world-data location candidate is found.
+					</td>
+				</tr>
+			</table>
+		</fieldset>
+		<?php
+		return;
+	}
+	
+	$categoryValue = $_GET['category'] ?? '';
+	$idValue = (int)($_GET['id'] ?? 0);
 	?>
 	<!-- Filters -->
 	<table border="0">
@@ -572,29 +596,29 @@ function DisplaySOEQuestData()
 			<td class="filter_labels">Filters:</td>
 			<td valign="top">
 				<?php
+				$catOptions = '';
 				$categories = $admin->GetSOEQuestCategories();
-				//print_r($categories);
 				foreach($categories as $category)
 					$catOptions .= sprintf(
 						'<option value="_admin.php?page=soequests&category=%s"%s>%s</option>',
-						$category['category'],
-						(isset($_GET['category']) && $_GET['category'] === $category['category']) ? " selected" : "",
-						$category['category']
+						urlencode($category['category']),
+						($categoryValue === $category['category']) ? " selected" : "",
+						htmlspecialchars($category['category'], ENT_QUOTES, 'UTF-8')
 					);
 				?>
 				<select name="category" onchange="dosub(this.options[this.selectedIndex].value)" class="combo">
-				<option value="_admin.php?page=soequests"<?php if( strlen($_GET['category'])==0 ) echo " selected" ?>>Pick a Category</option>
+				<option value="_admin.php?page=soequests"<?php if( strlen($categoryValue)==0 ) echo " selected" ?>>Pick a Category</option>
 				<?= $catOptions ?>
 				</select>&nbsp;
-				<a href="_admin.php?<?= $_SERVER['QUERY_STRING'] ?>">Reload Page</a>
-				<?php if( $_GET['id'] > 0 ) { ?>
-				&bull;&nbsp;<a href="_admin.php?page=soequests<?php if( strlen($_GET['category']) > 0 ) echo "&category=".$_GET['category'] ?>">Back to List</a>
+				<a href="_admin.php?<?= htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES, 'UTF-8') ?>">Reload Page</a>
+				<?php if( $idValue > 0 ) { ?>
+				&bull;&nbsp;<a href="_admin.php?page=soequests<?php if( strlen($categoryValue) > 0 ) echo "&category=".urlencode($categoryValue) ?>">Back to List</a>
 				<?php } ?>
 			</td>
 		</tr>
 	</table>
 	<br />
-	<?php if( $_GET['id'] == 0 ) { ?>
+	<?php if( $idValue == 0 ) { ?>
 	<div id="Editor">
 	<table width="1000" cellpadding="4" cellspacing="0" border="0">
 		<tr bgcolor="#cccccc">
@@ -606,10 +630,8 @@ function DisplaySOEQuestData()
 		</tr>
 		<?php
 		$querystring = sprintf("_admin.php?page=soequests");
-		
-		if( isset($_GET['category']) && strlen($_GET['category']) > 0 )
-			$querystring .= sprintf("&category=%s", $_GET['category']);
-										 
+		if( strlen($categoryValue) > 0 )
+			$querystring .= sprintf("&category=%s", urlencode($categoryValue));
 		$quest_data = $admin->GetSOEQuestData();
 		$i = 0;
 		foreach($quest_data as $row)
@@ -617,15 +639,15 @@ function DisplaySOEQuestData()
 			$row_class = ( $i++ % 2 ) ? " bgcolor=\"#eeeeee\"" : "";
 			?>
 		<tr<?= $row_class ?> valign="top">
-			<td><a href="<?= $querystring ?>&id=<?= $row['quest_id'] ?>&tab=quests"><?= $row['quest_id'] ?></a></td>
-			<td><?= $row['name'] ?></a></td>
-			<td><?= $row['category'] ?></a></td>
-			<td><?= $row['tier'] ?></a></td>
-			<td><?= $row['level'] ?></a></td>
+			<td><a href="<?= $querystring ?>&id=<?= (int)$row['quest_id'] ?>&tab=quests"><?= (int)$row['quest_id'] ?></a></td>
+			<td><?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?></td>
+			<td><?= htmlspecialchars($row['category'], ENT_QUOTES, 'UTF-8') ?></td>
+			<td><?= htmlspecialchars($row['tier'], ENT_QUOTES, 'UTF-8') ?></td>
+			<td><?= htmlspecialchars($row['level'], ENT_QUOTES, 'UTF-8') ?></td>
 		</tr>
-	<?php } // end foreach ?>
+	<?php } ?>
 		<tr>
-			<td colspan="5"><?= $admin->total_rows ?> rows available...</td>
+			<td colspan="5"><?= (int)$admin->total_rows ?> rows available...</td>
 		</tr>
 	</table>
 	<br />
@@ -634,26 +656,27 @@ function DisplaySOEQuestData()
 	else
 	{ 
 		$querystring = sprintf("_admin.php?page=soequests");
-		
-		if( strlen($_GET['category']) > 0 )
-			$querystring .= sprintf("&category=%s&id=%s", $_GET['category'], $_GET['id']);
+		if( strlen($categoryValue) > 0 )
+			$querystring .= sprintf("&category=%s&id=%d", urlencode($categoryValue), $idValue);
 		else
-			$querystring .= sprintf("&id=%s", $_GET['id']);
+			$querystring .= sprintf("&id=%d", $idValue);
 		
 		$current_tab_idx = ( isset($_GET['tab']) ) ? $_GET['tab'] : 'quests';
 		$tab_array = array(
 			'quests'	=> 'Quest',
 			'stages'	=> 'Stages',
-			'rewards'	=> 'Rewards'
+			'rewards'	=> 'Rewards',
+			'fixer'		=> 'Quest Fixer'
 		);
 		
 		$eq2->TabGenerator($current_tab_idx, $tab_array, $querystring, false);
 		
-		switch($_GET['tab'])
+		switch($current_tab_idx)
 		{
 			case "quests" : ShowSOEQuestDetails(); break;
 			case "stages" : ShowSOEQuestStages(); break;
 			case "rewards": ShowSOEQuestRewards(); break;
+			case "fixer" : ShowSOEQuestFixer(); break;
 		}
 	} 
 	?>
@@ -661,6 +684,247 @@ function DisplaySOEQuestData()
 	<?php	
 }
 
+function ShowSOEQuestFixAssistant()
+{
+	global $admin;
+	$stepTypes = $admin->QuestFixStepTypes();
+	$questName = $_POST['quest_fix_census_name'] ?? 'Hunting the Huntresses';
+	$questOption = $_POST['quest_fix_census_option'] ?? '';
+	$census = null;
+	$model = null;
+	$lua = '';
+	$selectedQuestJson = '';
+	$typeOverrides = isset($_POST['quest_fix_step_type']) && is_array($_POST['quest_fix_step_type']) ? $_POST['quest_fix_step_type'] : array();
+	$locationOverrides = isset($_POST['quest_fix_location_candidate']) && is_array($_POST['quest_fix_location_candidate']) ? $_POST['quest_fix_location_candidate'] : array();
+	$spawnCandidateOverrides = isset($_POST['quest_fix_spawn_candidate']) && is_array($_POST['quest_fix_spawn_candidate']) ? $_POST['quest_fix_spawn_candidate'] : array();
+	if( isset($_POST['quest_fix_census_parse']) )
+	{
+		$census = $admin->QuestFixCensusSearchByName($questName, $questOption);
+		if( !empty($census['ok']) && isset($census['quests']) && count($census['quests']) === 1 )
+			$selectedQuestJson = $census['quests'][0]['json'];
+	}
+	elseif( isset($_POST['quest_fix_census_accept']) && !empty($_POST['quest_fix_census_json']) )
+	{
+		$decodedJson = base64_decode((string)$_POST['quest_fix_census_json'], true);
+		if( $decodedJson !== false )
+			$selectedQuestJson = $decodedJson;
+		else
+			$census = array('ok' => false, 'error' => 'The selected Census JSON payload could not be decoded.');
+	}
+	elseif( isset($_POST['quest_fix_update_lua']) && !empty($_POST['quest_fix_selected_json']) )
+	{
+		$decodedJson = base64_decode((string)$_POST['quest_fix_selected_json'], true);
+		if( $decodedJson !== false )
+			$selectedQuestJson = $decodedJson;
+		else
+			$census = array('ok' => false, 'error' => 'The selected Census JSON payload could not be decoded for Lua update.');
+	}
+	if( $selectedQuestJson !== '' )
+	{
+		$decoded = $admin->QuestFixCensusDecodeQuestJson($selectedQuestJson);
+		if( !empty($decoded['ok']) )
+		{
+			$model = $admin->QuestFixCensusBuildQuestModel($decoded['quest_data']);
+			if( (is_array($typeOverrides) && count($typeOverrides) > 0) || (is_array($locationOverrides) && count($locationOverrides) > 0) )
+				$model = $admin->QuestFixApplyTypeOverrides($model, $typeOverrides, $locationOverrides, $spawnCandidateOverrides);
+			$lua = $admin->QuestFixBuildLuaFromCensusModel($model);
+		}
+		else
+			$census = $decoded;
+	}
+	?>
+	<fieldset>
+		<legend>Quest Fix Assistant - Test Build 5: Census + Auto Types + Manual Override + SpawnScript Evidence + Safe Location Candidate Selection</legend>
+		<form method="post" action="_admin.php?page=soequests">
+			<table width="100%" cellpadding="4" cellspacing="0" border="0">
+				<tr>
+					<td class="Label" width="180">Census Quest Name:</td>
+					<td class="Detail"><input type="text" name="quest_fix_census_name" value="<?= htmlspecialchars($questName, ENT_QUOTES, 'UTF-8') ?>" style="width:520px;" /></td>
+				</tr>
+				<tr>
+					<td class="Label">Optional Census Filter:</td>
+					<td class="Detail"><input type="text" name="quest_fix_census_option" value="<?= htmlspecialchars($questOption, ENT_QUOTES, 'UTF-8') ?>" style="width:320px;" /> Example: <code>crc=2378636280</code> or <code>&amp;crc=2378636280</code></td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td><input type="submit" name="quest_fix_census_parse" value="Census suchen + parsen" /></td>
+				</tr>
+			</table>
+		</form>
+		<?php if( is_array($census) && empty($census['ok']) ) { ?>
+		<hr />
+		<table width="100%" cellpadding="4" cellspacing="0" border="0">
+			<tr bgcolor="#f5cccc"><td><strong>Census error:</strong> <?= htmlspecialchars($census['error'] ?? 'Unknown Census error.', ENT_QUOTES, 'UTF-8') ?></td></tr>
+		</table>
+		<?php } ?>
+		<?php if( is_array($census) && !empty($census['ok']) && isset($census['quests']) && count($census['quests']) === 0 ) { ?>
+		<hr />
+		<table width="100%" cellpadding="4" cellspacing="0" border="0">
+			<tr bgcolor="#fff0cc"><td>No Census quest matched this name/filter. Try exact spelling or add the optional CRC filter.</td></tr>
+		</table>
+		<?php } ?>
+		<?php if( is_array($census) && !empty($census['ok']) && isset($census['quests']) && count($census['quests']) > 1 ) { ?>
+		<hr />
+		<table width="100%" cellpadding="4" cellspacing="0" border="0">
+			<tr bgcolor="#cccccc"><td colspan="7"><strong>Multiple Census quests found — choose one with “Übernehmen”</strong></td></tr>
+			<tr bgcolor="#dddddd"><td><strong>Name</strong></td><td><strong>ID</strong></td><td><strong>CRC</strong></td><td><strong>Category</strong></td><td><strong>Level</strong></td><td><strong>Tier</strong></td><td><strong>Action</strong></td></tr>
+			<?php foreach($census['quests'] as $questRow) { ?>
+			<tr>
+				<td><?= htmlspecialchars($questRow['name'], ENT_QUOTES, 'UTF-8') ?></td>
+				<td><?= htmlspecialchars($questRow['id'], ENT_QUOTES, 'UTF-8') ?></td>
+				<td><?= htmlspecialchars($questRow['crc'], ENT_QUOTES, 'UTF-8') ?></td>
+				<td><?= htmlspecialchars($questRow['category'], ENT_QUOTES, 'UTF-8') ?></td>
+				<td><?= htmlspecialchars($questRow['level'], ENT_QUOTES, 'UTF-8') ?></td>
+				<td><?= htmlspecialchars($questRow['tier'], ENT_QUOTES, 'UTF-8') ?></td>
+				<td>
+					<form method="post" action="_admin.php?page=soequests" style="display:inline;">
+						<input type="hidden" name="quest_fix_census_name" value="<?= htmlspecialchars($questName, ENT_QUOTES, 'UTF-8') ?>" />
+						<input type="hidden" name="quest_fix_census_option" value="<?= htmlspecialchars($questOption, ENT_QUOTES, 'UTF-8') ?>" />
+						<input type="hidden" name="quest_fix_census_json" value="<?= htmlspecialchars(base64_encode($questRow['json']), ENT_QUOTES, 'UTF-8') ?>" />
+						<input type="submit" name="quest_fix_census_accept" value="Übernehmen" />
+					</form>
+				</td>
+			</tr>
+			<?php } ?>
+		</table>
+		<?php } ?>
+		<?php if( is_array($model) && !empty($model['ok']) ) { ?>
+		<hr />
+		<table width="100%" cellpadding="4" cellspacing="0" border="0">
+			<tr bgcolor="#cccccc"><td colspan="2"><strong>Selected Census Quest</strong></td></tr>
+			<tr><td class="Label" width="180">Name:</td><td class="Detail"><?= htmlspecialchars($model['summary']['name'], ENT_QUOTES, 'UTF-8') ?></td></tr>
+			<tr><td class="Label">ID / CRC:</td><td class="Detail"><?= htmlspecialchars($model['summary']['id'], ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars($model['summary']['crc'], ENT_QUOTES, 'UTF-8') ?></td></tr>
+			<tr><td class="Label">Category / Level / Tier:</td><td class="Detail"><?= htmlspecialchars($model['summary']['category'], ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars($model['summary']['level'], ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars($model['summary']['tier'], ENT_QUOTES, 'UTF-8') ?></td></tr>
+			<tr><td class="Label">Quest Branches:</td><td class="Detail"><?= (int)count($model['branches']) ?></td></tr>
+			<tr><td class="Label">Local EQ2Emu Quest:</td><td class="Detail"><?php if(!empty($model['local_quest'])) { ?>ID <?= (int)$model['local_quest']['id'] ?> — <?= htmlspecialchars($model['local_quest']['name'], ENT_QUOTES, 'UTF-8') ?><?php } else { ?>Not found by exact name in active world DB<?php } ?></td></tr>
+			<tr><td class="Label">EQ2 Wiki Assist:</td><td class="Detail"><?php if(!empty($model['wiki']['ok'])) { ?>Loaded<?= !empty($model['wiki']['source']) ? ' [' . htmlspecialchars($model['wiki']['source'], ENT_QUOTES, 'UTF-8') . ']' : '' ?> — <?= (int)count($model['wiki']['coordinates'] ?? array()) ?> waypoint coordinate(s) parsed<?php } else { ?>Not available<?php if(!empty($model['wiki']['error'])) { ?> — <?= htmlspecialchars($model['wiki']['error'], ENT_QUOTES, 'UTF-8') ?><?php } ?><?php } ?></td></tr>
+		</table>
+		<br />
+		<form method="post" action="_admin.php?page=soequests">
+			<input type="hidden" name="quest_fix_census_name" value="<?= htmlspecialchars($questName, ENT_QUOTES, 'UTF-8') ?>" />
+			<input type="hidden" name="quest_fix_census_option" value="<?= htmlspecialchars($questOption, ENT_QUOTES, 'UTF-8') ?>" />
+			<input type="hidden" name="quest_fix_selected_json" value="<?= htmlspecialchars(base64_encode($selectedQuestJson), ENT_QUOTES, 'UTF-8') ?>" />
+			<table width="100%" cellpadding="4" cellspacing="0" border="0">
+				<tr bgcolor="#cccccc"><td colspan="13"><strong>Auto Parsed Quest Steps — Type can be changed, then press “Update Lua Preview”</strong></td></tr>
+				<tr bgcolor="#dddddd"><td><strong>Step</strong></td><td><strong>Census Text</strong></td><td><strong>Auto Type</strong></td><td><strong>Selected Type</strong></td><td><strong>Count</strong></td><td><strong>Target</strong></td><td><strong>Zone</strong></td><td><strong>Best ID</strong></td><td><strong>Best Match</strong></td><td><strong>Score</strong></td><td><strong>Script Evidence</strong></td><td><strong>Candidate / Location Override</strong></td><td><strong>Override?</strong></td></tr>
+				<?php foreach($model['branches'] as $branch) { $best = count($branch['candidates']) > 0 ? $branch['candidates'][0] : null; $selectedType = $branch['analysis']['step_type']; $autoType = $branch['analysis']['auto_type'] ?? $selectedType; $bestId = $selectedType === 'Location' ? 0 : (int)$branch['best_spawn_id']; $scriptEvidence = $best !== null && !empty($best['script_evidence']) ? $best['script_evidence'] : array(); $locationText = $selectedType === 'Location' && !empty($branch['best_location']) ? (($branch['best_location']['source_zone_name'] ?? '') . ' @ ' . ($branch['best_location']['x'] ?? 0) . ', ' . ($branch['best_location']['y'] ?? 0) . ', ' . ($branch['best_location']['z'] ?? 0)) : 'Unresolved'; $selectedLocationCandidateId = (int)($branch['best_location']['id'] ?? 0); $selectedSpawnCandidateIds = isset($branch['selected_spawn_candidate_ids']) && is_array($branch['selected_spawn_candidate_ids']) ? array_values(array_unique(array_map('intval', $branch['selected_spawn_candidate_ids']))) : array(); ?>
+				<tr<?= $best !== null ? ' bgcolor="#d8f0d8"' : '' ?>>
+					<td><?= (int)$branch['step_number'] ?></td>
+					<td><?= htmlspecialchars($branch['step_text'], ENT_QUOTES, 'UTF-8') ?></td>
+					<td><?= htmlspecialchars($autoType, ENT_QUOTES, 'UTF-8') ?></td>
+					<td>
+						<select name="quest_fix_step_type[<?= (int)$branch['step_number'] ?>]">
+						<?php foreach($stepTypes as $stepType) { ?>
+							<option value="<?= htmlspecialchars($stepType, ENT_QUOTES, 'UTF-8') ?>"<?= $selectedType === $stepType ? ' selected="selected"' : '' ?>><?= htmlspecialchars($stepType, ENT_QUOTES, 'UTF-8') ?></option>
+						<?php } ?>
+						</select>
+					</td>
+					<td><?= (int)$branch['analysis']['count'] ?></td>
+					<td><?= htmlspecialchars($branch['analysis']['target'], ENT_QUOTES, 'UTF-8') ?></td>
+					<td><?= htmlspecialchars($branch['analysis']['zone'], ENT_QUOTES, 'UTF-8') ?></td>
+					<td><?= (int)$bestId ?></td>
+					<td><?= $best !== null ? htmlspecialchars($best['name'], ENT_QUOTES, 'UTF-8') : '—' ?></td>
+					<td><?= $best !== null ? (int)$best['score'] : 0 ?></td>
+					<td><?php if(!empty($scriptEvidence['has_set_step_complete'])) { ?>Exact step complete<?php } elseif(!empty($scriptEvidence['has_get_step'])) { ?>Quest step check<?php } elseif(!empty($scriptEvidence['has_script'])) { ?>Script present<?php } else { ?>—<?php } ?></td>
+					<td>
+						<?php if( $selectedType === 'Location' ) { ?>
+							<div><strong><?= htmlspecialchars($locationText, ENT_QUOTES, 'UTF-8') ?></strong><?= !empty($branch['location_auto_selected']) ? ' <em>(auto)</em>' : '' ?></div>
+							<select name="quest_fix_location_candidate[<?= (int)$branch['step_number'] ?>]" style="width:520px; max-width:100%; margin-top:4px;">
+								<option value="0"<?= $selectedLocationCandidateId === 0 ? ' selected="selected"' : '' ?>>unresolved / choose later</option>
+								<?php foreach(array_slice($branch['candidates'], 0, 25) as $locationCandidate) { $candidateId = (int)($locationCandidate['id'] ?? 0); $candidateSource = $locationCandidate['source'] ?? 'DB'; $candidateLabel = '[' . $candidateSource . '] ' . ($locationCandidate['name'] ?? 'Location') . ' | ' . ($locationCandidate['source_zone_name'] ?? '') . ' @ ' . ($locationCandidate['x'] ?? 0) . ', ' . ($locationCandidate['y'] ?? 0) . ', ' . ($locationCandidate['z'] ?? 0) . ' | score ' . (int)($locationCandidate['score'] ?? 0); ?>
+									<option value="<?= $candidateId ?>"<?= $selectedLocationCandidateId === $candidateId ? ' selected="selected"' : '' ?>><?= htmlspecialchars($candidateLabel, ENT_QUOTES, 'UTF-8') ?></option>
+								<?php } ?>
+							</select>
+						<?php } elseif( $selectedType === 'Kill' || $selectedType === 'Chat' ) { $resolvedSpawnIds = !empty($branch['best_spawn_ids']) ? implode(', ', array_map('intval', $branch['best_spawn_ids'])) : ((int)($branch['best_spawn_id'] ?? 0) > 0 ? (string)(int)$branch['best_spawn_id'] : 'unresolved'); ?>
+							<div><strong>Resolved spawn ID(s): <?= htmlspecialchars($resolvedSpawnIds, ENT_QUOTES, 'UTF-8') ?></strong><?= !empty($branch['spawn_candidate_manual_selected']) ? ' <em>(manual)</em>' : ' <em>(auto)</em>' ?></div>
+							<select name="quest_fix_spawn_candidate[<?= (int)$branch['step_number'] ?>][]" multiple="multiple" size="8" style="width:620px; max-width:100%; margin-top:4px;">
+								<option value="0"<?= count($selectedSpawnCandidateIds) === 0 ? ' selected="selected"' : '' ?>>auto / use ranked candidates</option>
+								<?php foreach(array_slice($branch['candidates'], 0, 40) as $spawnCandidate) { $candidateId = (int)($spawnCandidate['id'] ?? 0); $candidateZone = trim((string)($spawnCandidate['zone_description'] ?? ($spawnCandidate['zone_name'] ?? ''))); $candidateAttackable = isset($spawnCandidate['attackable']) ? ((int)$spawnCandidate['attackable'] === 1 ? 'attackable' : 'non-attackable') : ''; $candidateLabel = '#' . $candidateId . ' | ' . ($spawnCandidate['name'] ?? 'Spawn') . ($candidateZone !== '' ? ' | ' . $candidateZone : '') . ($candidateAttackable !== '' ? ' | ' . $candidateAttackable : '') . ' | score ' . (int)($spawnCandidate['score'] ?? 0); ?>
+									<option value="<?= $candidateId ?>"<?= in_array($candidateId, $selectedSpawnCandidateIds, true) ? ' selected="selected"' : '' ?>><?= htmlspecialchars($candidateLabel, ENT_QUOTES, 'UTF-8') ?></option>
+								<?php } ?>
+							</select>
+							<div style="font-size:11px; margin-top:2px;">Kill/Chat: choose one or several spawn IDs with Ctrl/Cmd for a manual Lua override, or leave “auto” selected.</div>
+						<?php } else { ?>
+							—
+						<?php } ?>
+					</td>
+					<td><?= !empty($branch['analysis']['manual_override']) ? 'Yes' : 'No' ?></td>
+				</tr>
+				<?php } ?>
+			</table>
+			<p><input type="submit" name="quest_fix_update_lua" value="Update Lua Preview" /></p>
+			<table width="100%" cellpadding="4" cellspacing="0" border="0">
+				<tr bgcolor="#cccccc"><td><strong>Generated Lua Preview</strong></td></tr>
+				<tr><td><textarea rows="36" style="width:99%; font-family:monospace;"><?= htmlspecialchars($lua, ENT_QUOTES, 'UTF-8') ?></textarea></td></tr>
+			</table>
+		</form>
+		<?php } ?>
+	</fieldset>
+	<br />
+	<?php
+}
+
+function ShowSOEQuestFixer()
+{
+	global $admin;
+	
+	$quest = $admin->GetSOEQuest((int)($_GET['id'] ?? 0));
+	$stages = $admin->GetSOEQuestStages((int)($_GET['id'] ?? 0));
+	?>
+	<br />
+	<fieldset>
+		<legend>Quest Fixer: Automatic Stage Parsing</legend>
+		<table width="100%" cellpadding="4" cellspacing="0" border="0">
+			<tr><td class="Label" width="160">Quest:</td><td class="Detail"><?= htmlspecialchars($quest['name'] ?? '', ENT_QUOTES, 'UTF-8') ?></td></tr>
+			<tr><td class="Label">Mode:</td><td class="Detail">Test Build 1 auto-parses Kill stages and proposes EQ2Emu spawn IDs from the active world database.</td></tr>
+		</table>
+	</fieldset>
+	<?php
+	if( !is_array($stages) || count($stages) === 0 )
+	{
+		print('<p>No SOE quest stage data found.</p>');
+		return;
+	}
+	
+	foreach($stages as $stage)
+	{
+		$analysis = $admin->QuestFixAnalyzeText($stage['description'] ?? '');
+		$candidates = array();
+		$bestSpawnId = 0;
+		$lua = '';
+		if( $analysis['step_type'] === 'Kill' && trim($analysis['target']) !== '' )
+		{
+			$candidates = $admin->QuestFixFindSpawnCandidates($analysis['target'], $analysis['zone'], 8);
+			if( count($candidates) > 0 )
+				$bestSpawnId = (int)$candidates[0]['id'];
+			$lua = $admin->QuestFixBuildKillLuaSnippet((int)($stage['stage_num'] ?? 1), $analysis, $bestSpawnId, $stage['description'] ?? '');
+		}
+		?>
+		<br />
+		<fieldset>
+			<legend>Stage #<?= (int)($stage['stage_num'] ?? 0) ?></legend>
+			<table width="100%" cellpadding="4" cellspacing="0" border="0">
+				<tr><td class="Label" width="160">Stage Text:</td><td class="Detail"><?= htmlspecialchars($stage['description'] ?? '', ENT_QUOTES, 'UTF-8') ?></td></tr>
+				<tr><td class="Label">Detected:</td><td class="Detail"><?= htmlspecialchars($analysis['step_type'], ENT_QUOTES, 'UTF-8') ?> | Count <?= (int)$analysis['count'] ?> | Target <?= htmlspecialchars($analysis['target'], ENT_QUOTES, 'UTF-8') ?> | Zone <?= htmlspecialchars($analysis['zone'], ENT_QUOTES, 'UTF-8') ?></td></tr>
+				<tr><td class="Label">Best Spawn:</td><td class="Detail"><?= $bestSpawnId > 0 ? (int)$bestSpawnId : 'No automatic match' ?></td></tr>
+			</table>
+			<?php if( count($candidates) > 0 ) { ?>
+			<br />
+			<table width="100%" cellpadding="4" cellspacing="0" border="0">
+				<tr bgcolor="#dddddd"><td><strong>ID</strong></td><td><strong>Name</strong></td><td><strong>Zone</strong></td><td><strong>Score</strong></td><td><strong>Reason</strong></td></tr>
+				<?php foreach($candidates as $candidate) { ?>
+				<tr><td><?= (int)$candidate['id'] ?></td><td><?= htmlspecialchars($candidate['name'], ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars(($candidate['zone_description'] ?: $candidate['zone_name']), ENT_QUOTES, 'UTF-8') ?></td><td><?= (int)$candidate['score'] ?></td><td><?= htmlspecialchars($candidate['score_reasons'], ENT_QUOTES, 'UTF-8') ?></td></tr>
+				<?php } ?>
+			</table>
+			<?php } ?>
+			<?php if( trim($lua) !== '' ) { ?>
+			<br />
+			<textarea rows="4" style="width:98%; font-family:monospace;"><?= htmlspecialchars($lua, ENT_QUOTES, 'UTF-8') ?></textarea>
+			<?php } ?>
+		</fieldset>
+		<?php
+	}
+}
 
 function ShowSOEQuestDetails()
 {
@@ -4512,3 +4776,4 @@ function editor_news()
 }
 
 ?>
+
