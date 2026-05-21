@@ -243,4 +243,3 @@ if( $GLOBALS['config']['debug_forms'] && isset($_POST['cmd']) )
     /* if logged in, continue with main body */
     ?>
     <div id="main-body">
-
