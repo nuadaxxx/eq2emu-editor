@@ -284,12 +284,6 @@ function RegisterQuest()
 			$strHTML .= $strOffset . "<tr>\n";
 			$strHTML .= $strOffset . "  <td class='Title' colspan='2'>Editing: " . $q->quest_name . " (" . $q->quest_id . ") (" . $script_full_name  . ") " . $q->PrintOffsiteLinks() . "</td>\n";
 			$strHTML .= $strOffset . "</tr>\n";
-			$registerAiState = QuestAIGetAssistantState(true);
-			$strHTML .= $strOffset . "<tr>\n";
-			$strHTML .= $strOffset . "  <td colspan='2' align='center' style='padding:0 18px 8px 18px;'>\n";
-			$strHTML .= QuestAIRenderRegisterCensusSearchHtml($registerAiState);
-			$strHTML .= $strOffset . "  </td>\n";
-			$strHTML .= $strOffset . "</tr>\n";
 			$strHTML .= $strOffset . "<tr>\n";
 			$strHTML .= $strOffset . "  <td valign='top'>\n";
 			$strHTML .= $strOffset . "    <form method='post' name='QuestForm' />\n";
@@ -445,6 +439,7 @@ function RegisterQuest()
 			$strHTML .= $strOffset . "        </table>\n";
 			$strHTML .= $strOffset . "      </form>\n";
 			$strHTML .= $strOffset . "    </td>\n";
+			$registerAiState = QuestAIGetAssistantState(true);
 			$strHTML .= $strOffset . "    <td valign='top' style='padding-left:18px;'>\n";
 			$strHTML .= QuestAIRenderRegisterRecommendationHtml($registerAiState, $data);
 			$strHTML .= $strOffset . "    </td>\n";
@@ -986,7 +981,8 @@ function QuestAIRenderQuestPicker($state, $compact = false)
 				<td class="Detail"><input type="text" name="quest_fix_census_option" value="<?= htmlspecialchars($questOption, ENT_QUOTES, 'UTF-8') ?>" style="width:320px;" /> Example: <code>crc=2378636280</code></td>
 			</tr>
 			<tr>
-				<td colspan="2" align="center"><input type="submit" name="quest_fix_census_parse" value="Census" title="Census suchen + parsen" class="submit" /></td>
+				<td>&nbsp;</td>
+				<td><input type="submit" name="quest_fix_census_parse" value="Census suchen + parsen" /></td>
 			</tr>
 		</table>
 	</form>
@@ -1012,7 +1008,7 @@ function QuestAIRenderQuestPicker($state, $compact = false)
 						<input type="hidden" name="quest_fix_census_name" value="<?= htmlspecialchars($questName, ENT_QUOTES, 'UTF-8') ?>" />
 						<input type="hidden" name="quest_fix_census_option" value="<?= htmlspecialchars($questOption, ENT_QUOTES, 'UTF-8') ?>" />
 						<input type="hidden" name="quest_fix_census_json" value="<?= htmlspecialchars(base64_encode($questRow['json']), ENT_QUOTES, 'UTF-8') ?>" />
-						<input type="submit" name="quest_fix_census_accept" value="Übernehmen" class="submit" />
+						<input type="submit" name="quest_fix_census_accept" value="Übernehmen" />
 					</form>
 				</td>
 			</tr>
@@ -1094,7 +1090,7 @@ function QuestAIRenderStepsForm($state, $title = 'Quest-AI Step Resolver')
 						<div><strong>Resolved spawn ID(s): <?= htmlspecialchars($resolvedSpawnIds, ENT_QUOTES, 'UTF-8') ?></strong><?= !empty($branch['spawn_candidate_manual_selected']) ? ' <em>(manual)</em>' : ' <em>(auto)</em>' ?></div>
 						<input type="hidden" id="quest_fix_spawn_ids_<?= $stepNo ?>" name="quest_fix_spawn_candidate_text[<?= $stepNo ?>]" value="<?= htmlspecialchars($manualSpawnText, ENT_QUOTES, 'UTF-8') ?>" />
 						<div id="quest_fix_spawn_manual_<?= $stepNo ?>" style="font-size:11px; margin-top:2px;"><strong>Manual ID override:</strong> <?= $manualSpawnText !== '' ? htmlspecialchars($manualSpawnText, ENT_QUOTES, 'UTF-8') : 'none / auto ranking active' ?></div>
-						<div style="margin-top:4px;"><input type="text" id="quest_fix_spawn_lookup_<?= $stepNo ?>" autocomplete="off" class="box" style="width:420px;" placeholder="Search spawn name or ID; click a ghosted result to add it" onkeyup="QuestFixSpawnLookupAJAX(<?= $stepNo ?>);" /><input type="button" value="Clear manual IDs" class="submit" onclick="QuestFixClearSpawnOverride(<?= $stepNo ?>);" /><div id="quest_fix_spawn_suggest_<?= $stepNo ?>"></div></div>
+						<div style="margin-top:4px;"><input type="text" id="quest_fix_spawn_lookup_<?= $stepNo ?>" autocomplete="off" class="box" style="width:420px;" placeholder="Search spawn name or ID; click a ghosted result to add it" onkeyup="QuestFixSpawnLookupAJAX(<?= $stepNo ?>);" /><input type="button" value="Clear manual IDs" onclick="QuestFixClearSpawnOverride(<?= $stepNo ?>);" /><div id="quest_fix_spawn_suggest_<?= $stepNo ?>"></div></div>
 						<?php if( count($branch['candidates']) > 0 ) { ?><div style="font-size:11px; margin-top:4px;"><strong>Top ranked auto candidates:</strong> <?php $preview = array(); foreach(array_slice($branch['candidates'], 0, 5) as $spawnCandidate) { $preview[] = '#' . (int)($spawnCandidate['id'] ?? 0) . ' ' . ($spawnCandidate['name'] ?? 'Spawn'); } echo htmlspecialchars(implode(' | ', $preview), ENT_QUOTES, 'UTF-8'); ?></div><?php } ?>
 					<?php } else { ?>—<?php } ?>
 				</td>
@@ -1102,7 +1098,7 @@ function QuestAIRenderStepsForm($state, $title = 'Quest-AI Step Resolver')
 			</tr>
 			<?php } ?>
 		</table>
-		<p><input type="submit" name="quest_fix_update_lua" value="Update Lua Preview" class="submit" /></p>
+		<p><input type="submit" name="quest_fix_update_lua" value="Update Lua Preview" /></p>
 	</form>
 	<?php
 }
@@ -1141,17 +1137,6 @@ function QuestAICompareBadge($same, $leftValue = '', $rightValue = '')
 	if( $same )
 		return '<span style="display:inline-block; padding:1px 5px; background:#d8f0d8; border:1px solid #9bc59b;">gleich</span>';
 	return '<span style="display:inline-block; padding:1px 5px; background:#fff0cc; border:1px solid #d4b76d;">abweichend</span>';
-}
-
-function QuestAIRenderRegisterCensusSearchHtml($state)
-{
-	$html = "<table class='SectionMain' cellspacing='0' cellpadding='4' border='0' style='width:900px; margin:0 auto 8px auto;'>\n";
-	$html .= "<tr><td class='SectionTitle' style='text-align:center;'>Census Suche / Referenz neu laden</td></tr>\n";
-	$html .= "<tr><td class='SectionBody' style='text-align:center;'>\n";
-	$html .= QuestAIHtmlCapture(function() use ($state) { QuestAIRenderQuestPicker($state, true); });
-	$html .= QuestAIHtmlCapture(function() use ($state) { QuestAIRenderAssistantNotice($state, 'Census'); });
-	$html .= "</td></tr></table>\n";
-	return $html;
 }
 
 function QuestAIRenderRegisterRecommendationHtml($state, $localData)
@@ -1206,48 +1191,36 @@ function QuestAIRenderRegisterRecommendationHtml($state, $localData)
 		return "<input type='text' readonly='readonly' value='" . htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8') . "' style='width:400px; background:#f7f7f7;' />";
 	};
 	$readonlyText = function($value) {
-		return "<textarea readonly='readonly' style='width:400px; height:150px; background:#f7f7f7;'>" . htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8') . "</textarea>";
+		return "<textarea readonly='readonly' style='width:400px; height:90px; background:#f7f7f7;'>" . htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8') . "</textarea>";
 	};
 	$dashInput = $readonlyInput('—');
-	$dashText = $readonlyText('—');
 	$notFromCensus = "<span style='color:#777;'>nicht aus Census gesetzt</span>";
 	$notUnambiguous = "<span style='color:#777;'>nicht aus Census eindeutig gesetzt</span>";
 
 	$html = "<table class='SectionMain' cellspacing='0' cellpadding='4' border='0' style='width:670px; max-width:670px;'>\n";
-	$html .= "<tr><td class='SectionTitle'>Register Quest — AI-/Census-Vergleich</td></tr>\n";
+	$html .= "<tr><td class='SectionTitle'>Quest-AI Empfehlungen / Census-Vergleich</td></tr>\n";
 	$html .= "<tr><td class='SectionBody'>\n";
+	$html .= "<div style='margin-bottom:8px;'><strong>Rechts:</strong> AI-/Census-/Wiki-Empfehlungen. <strong>Links:</strong> unverändert die aktuelle lokale DB-/Lua-Quest.</div>\n";
+	$html .= QuestAIHtmlCapture(function() use ($state) { QuestAIRenderQuestPicker($state, true); });
+	$html .= QuestAIHtmlCapture(function() use ($state) { QuestAIRenderAssistantNotice($state, 'Census'); });
 
 	if( !is_array($model) || empty($model['ok']) )
 	{
 		$html .= "<table width='100%' cellpadding='4' cellspacing='0' border='0' style='margin-top:8px;'><tr bgcolor='#fff0cc'><td><strong>AI-Empfehlungen:</strong> " . htmlspecialchars(QuestAIGetPendingCensusChoiceText($state), ENT_QUOTES, 'UTF-8') . "</td></tr></table>\n";
-		$html .= "<table width='100%' cellpadding='4' cellspacing='0' border='0' style='margin-top:8px;'>\n";
-		$html .= "<tr><td class='Label' style='width:165px;'>quest_id:</td><td>—</td><td><span style='color:#777;'>Census hat keine lokale DB-ID</span></td></tr>\n";
-		$html .= "<tr><td class='Label'>name:</td><td>" . $readonlyInput($questName !== '' ? $questName : '—') . "</td><td>" . ($questName !== '' ? QuestAICompareBadge(strcasecmp((string)($localData['name'] ?? ''), $questName) === 0, (string)($localData['name'] ?? ''), $questName) : $notFromCensus) . "</td></tr>\n";
-		$html .= "<tr><td class='Label'>type:</td><td>" . $dashInput . "</td><td>" . $notUnambiguous . "</td></tr>\n";
-		$html .= "<tr><td class='Label'>zone:</td><td>" . $dashInput . "</td><td>" . $notUnambiguous . "</td></tr>\n";
-		$html .= "<tr><td class='Label'>level:</td><td>" . $dashInput . "</td><td>" . $notFromCensus . "</td></tr>\n";
-		$html .= "<tr><td class='Label'>difficulty:</td><td>" . $dashInput . "</td><td>" . $notFromCensus . "</td></tr>\n";
-		$html .= "<tr><td class='Label' valign='top'>description:</td><td>" . $dashText . "</td><td valign='top'>" . $notFromCensus . "</td></tr>\n";
-		$html .= "<tr><td class='Label' valign='top'>completed_text:</td><td>" . $dashText . "</td><td valign='top'>" . $notFromCensus . "</td></tr>\n";
-		$html .= "<tr><td class='Label'>spawn_id:</td><td>" . $dashInput . "</td><td><span style='color:#777;'>später aus AI-Questgeberanalyse</span></td></tr>\n";
-		$html .= "<tr><td class='Label'>lua_script:</td><td>" . $dashInput . "</td><td><span style='color:#777;'>später aus Lua-Pfadprüfung</span></td></tr>\n";
-		$html .= "<tr><td class='Label'>Minimum Earned Status:</td><td>" . $dashInput . "</td><td>" . $notFromCensus . "</td></tr>\n";
-		$html .= "<tr><td class='Label'>Maximum Earned Status:</td><td>" . $dashInput . "</td><td>" . $notFromCensus . "</td></tr>\n";
-		$html .= "</table>\n";
-
 		$html .= "</td></tr></table>\n";
 		return $html;
 	}
 
 	$html .= "<table width='100%' cellpadding='4' cellspacing='0' border='0' style='margin-top:8px;'>\n";
-	$html .= "<tr><td class='Label' style='width:165px;'>quest_id:</td><td>—</td><td><span style='color:#777;'>Census hat keine lokale DB-ID</span></td></tr>\n";
+	$html .= "<tr bgcolor='#cccccc'><td colspan='3'><strong>Register Quest — AI-Empfehlung</strong></td></tr>\n";
+	$html .= "<tr><td class='Label' style='width:165px;'>quest_id:</td><td>" . $readonlyInput('—') . "</td><td><span style='color:#777;'>Census hat keine lokale DB-ID</span></td></tr>\n";
 	$html .= "<tr><td class='Label'>name:</td><td>" . $readonlyInput($questName !== '' ? $questName : '—') . "</td><td>" . QuestAICompareBadge(strcasecmp((string)($localData['name'] ?? ''), $questName) === 0, (string)($localData['name'] ?? ''), $questName) . "</td></tr>\n";
 	$html .= "<tr><td class='Label'>type:</td><td>" . $readonlyInput($typeRecommendation !== '' ? $typeRecommendation : '—') . "</td><td>" . ($typeRecommendation !== '' ? QuestAICompareBadge(strcasecmp((string)($localData['type'] ?? ''), $typeRecommendation) === 0, (string)($localData['type'] ?? ''), $typeRecommendation) : $notUnambiguous) . "</td></tr>\n";
 	$html .= "<tr><td class='Label'>zone:</td><td>" . $readonlyInput($zoneRecommendation !== '' ? $zoneRecommendation : '—') . "</td><td>" . ($zoneRecommendation !== '' ? QuestAICompareBadge(strcasecmp((string)($localData['zone'] ?? ''), $zoneRecommendation) === 0, (string)($localData['zone'] ?? ''), $zoneRecommendation) : $notUnambiguous) . "</td></tr>\n";
 	$html .= "<tr><td class='Label'>level:</td><td>" . $readonlyInput($level !== '' ? $level : '—') . "</td><td>" . QuestAICompareBadge((string)($localData['level'] ?? '') === $level, (string)($localData['level'] ?? ''), $level) . "</td></tr>\n";
 	$html .= "<tr><td class='Label'>difficulty:</td><td>" . $dashInput . "</td><td>" . $notFromCensus . "</td></tr>\n";
-	$html .= "<tr><td class='Label' valign='top'>description:</td><td>" . ($description !== '' ? $readonlyText($description) : $dashText) . "</td><td valign='top'>" . ($description !== '' ? QuestAICompareBadge(trim((string)($localData['description'] ?? '')) === trim($description), (string)($localData['description'] ?? ''), $description) : $notFromCensus) . "</td></tr>\n";
-	$html .= "<tr><td class='Label' valign='top'>completed_text:</td><td>" . ($completionText !== '' ? $readonlyText($completionText) : $dashText) . "</td><td valign='top'>" . ($completionText !== '' ? QuestAICompareBadge(trim((string)($localData['completed_text'] ?? '')) === trim($completionText), (string)($localData['completed_text'] ?? ''), $completionText) : $notFromCensus) . "</td></tr>\n";
+	$html .= "<tr><td class='Label' valign='top'>description:</td><td>" . ($description !== '' ? $readonlyText($description) : $dashInput) . "</td><td valign='top'>" . ($description !== '' ? QuestAICompareBadge(trim((string)($localData['description'] ?? '')) === trim($description), (string)($localData['description'] ?? ''), $description) : $notFromCensus) . "</td></tr>\n";
+	$html .= "<tr><td class='Label' valign='top'>completed_text:</td><td>" . ($completionText !== '' ? $readonlyText($completionText) : $dashInput) . "</td><td valign='top'>" . ($completionText !== '' ? QuestAICompareBadge(trim((string)($localData['completed_text'] ?? '')) === trim($completionText), (string)($localData['completed_text'] ?? ''), $completionText) : $notFromCensus) . "</td></tr>\n";
 	$html .= "<tr><td class='Label'>spawn_id:</td><td>" . $dashInput . "</td><td><span style='color:#777;'>später aus AI-Questgeberanalyse</span></td></tr>\n";
 	$html .= "<tr><td class='Label'>lua_script:</td><td>" . $dashInput . "</td><td><span style='color:#777;'>später aus Lua-Pfadprüfung</span></td></tr>\n";
 	$html .= "<tr><td class='Label'>Minimum Earned Status:</td><td>" . $dashInput . "</td><td>" . $notFromCensus . "</td></tr>\n";
@@ -1271,7 +1244,6 @@ function QuestAIRenderRegisterRecommendationHtml($state, $localData)
 	$html .= "<tr><td class='Label'>EQ2 Wiki Assist:</td><td>" . htmlspecialchars($wikiStatus, ENT_QUOTES, 'UTF-8') . "</td></tr>\n";
 	$html .= "<tr><td class='Label' valign='top'>Hinweis:</td><td>Diese rechte Box macht nur den Vergleich sichtbar. Sie überschreibt die linke DB-Quest nicht automatisch.</td></tr>\n";
 	$html .= "</table>\n";
-
 	$html .= "</td></tr></table>\n";
 	return $html;
 }
